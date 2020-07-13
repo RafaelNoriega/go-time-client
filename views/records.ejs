@@ -1,0 +1,21 @@
+<% include ./partials/_header.ejs%>
+<% include ./partials/_navbar.ejs%>
+<div class="container-md">
+    <div class="row">
+        <div class="col-12" style="padding-top: 80px;">
+            <h1 class="text-center text-primary" style="padding-top: 10px;padding-bottom: 10px;">Time Entry Records</h1>
+        </div>
+        <div class="col" id="date-picker">
+            <form>
+                <div class="form-group"><label>Date</label></div>
+            </form><input type="date"></div>
+        <div class="col-12 col-md-12 search-table-col">
+            <div class="form-group pull-right col-lg-4"><input type="text" class="search form-control" placeholder="Search by typing here.."></div><span class="counter pull-right"></span>
+            <div class="table-responsive text-center table table-hover table-bordered results">
+                <div class="tbl_user_data"></div>
+                <div class="panel panel-default">
+            </div>
+        </div>
+    </div>
+</div>
+<% include ./partials/_footer.ejs%>
