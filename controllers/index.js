@@ -28,7 +28,7 @@ exports.newEmployee = (req, res, next) => {
                 }else{
                     console.log('Employee Id: ',employeeId)
                     params = {
-                        TableName: 'go-time',
+                        TableName: process.env.AWS_DATABASE,
                         Item: { 
                             pk,
                             sk: `EMP#${uuid()}`,
@@ -58,15 +58,18 @@ exports.getTime = async (req, res, next) => {
         let user = req.user;
         let day = moment().format('YYYY-MM-DD')
         let params = {
-            TableName : "go-time",
+            TableName : process.env.AWS_DATABASE,
             KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
+            FilterExpression: "#active = :activeValue",
             ExpressionAttributeNames:{
                 "#pk": "pk",
-                "#sk": "sk"
+                "#sk": "sk",
+                "#active": "active"
             },
             ExpressionAttributeValues: {
                 ":userPK": user.pk,
-                ":sk": 'EMP#'
+                ":sk": 'EMP#',
+                ":activeValue": true
             }
         };
         
@@ -81,7 +84,6 @@ exports.getTime = async (req, res, next) => {
 
 exports.newTime = async (req, res, next) => {
     try {
-        console.log(req.body);
         const {employees, date, hours, breakTime} = req.body
         let employeesList = employees;
         console.log("employees: ", typeof(employees))
@@ -96,7 +98,7 @@ exports.newTime = async (req, res, next) => {
             console.log(employees)
             for(let e of employeesList){  
                 let params = {
-                    TableName : "go-time",
+                    TableName : process.env.AWS_DATABASE,
                     KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
                     ExpressionAttributeNames:{
                         "#pk": "pk",
@@ -111,7 +113,7 @@ exports.newTime = async (req, res, next) => {
                 let {Items} = await docClient.query(params).promise().catch(error => console.log(error));
         
                 params = {
-                    TableName: 'go-time',
+                    TableName: process.env.AWS_DATABASE,
                     Item: {
                         pk: user.pk,
                         sk: `TIME#${user.groupId}#DATE#${date[0]}#EMP#${e.substring(4)}`,
@@ -163,7 +165,7 @@ exports.timeRecordsData = async (req, res, next) => {
         const {startDate, endDate} = req.query
 
         let params = {
-            TableName : "go-time",
+            TableName : process.env.AWS_DATABASE,
             KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
             FilterExpression: "#date between :startDate and :endDate",
             ExpressionAttributeNames:{
@@ -192,7 +194,7 @@ exports.timeRecordsDataUpdate = async (req, res, next) => {
     const {row_id, col_name, col_val, call_type} = req.body;
 
     let params = {
-        TableName:'go-time',
+        TableName:process.env.AWS_DATABASE,
         Key:{
             "pk": user.pk,
             "sk": row_id

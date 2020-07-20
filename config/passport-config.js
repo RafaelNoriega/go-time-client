@@ -21,7 +21,7 @@ passport.use('user', new LocalStrategy(
         }
         
         let params = {
-            TableName : 'go-time',
+            TableName :  process.env.AWS_DATABASE,
             IndexName: "username-index",
             KeyConditionExpression: "#user = :user",
             ExpressionAttributeNames:{

@@ -367,154 +367,154 @@ $(document).ready(function($)
 
 
     //---> Add new record row
-	$(document).on('click', '.btn_new_row', function(event) 
-	{
-		event.preventDefault();
-		//create a random id
-		var row_id = Math.random().toString(36).substr(2);
-		//get table rows
-		var tbl_row = $(document).find('.tbl_code_with_mark').find('tr');	 
-		var tbl = '';
-		tbl +='<tr row_id="'+row_id+'">';
-			tbl +='<td ><div class="new_row_data fname bg-warning" contenteditable="true" edit_type="click" col_name="fname"></div></td>';
-			tbl +='<td ><div class="new_row_data lname bg-warning" contenteditable="true" edit_type="click" col_name="lname"></div></td>';
-			tbl +='<td ><div class="new_row_data email bg-warning" contenteditable="true" edit_type="click" col_name="email"></div></td>';
+	// $(document).on('click', '.btn_new_row', function(event) 
+	// {
+	// 	event.preventDefault();
+	// 	//create a random id
+	// 	var row_id = Math.random().toString(36).substr(2);
+	// 	//get table rows
+	// 	var tbl_row = $(document).find('.tbl_code_with_mark').find('tr');	 
+	// 	var tbl = '';
+	// 	tbl +='<tr row_id="'+row_id+'">';
+	// 		tbl +='<td ><div class="new_row_data fname bg-warning" contenteditable="true" edit_type="click" col_name="fname"></div></td>';
+	// 		tbl +='<td ><div class="new_row_data lname bg-warning" contenteditable="true" edit_type="click" col_name="lname"></div></td>';
+	// 		tbl +='<td ><div class="new_row_data email bg-warning" contenteditable="true" edit_type="click" col_name="email"></div></td>';
 
-			//--->edit options > start
-			tbl +='<td>';			 
-				tbl +='  <a href="#" class="btn btn-link btn_new" row_id="'+row_id+'" > Add Entry</a>   | ';
-				tbl +='  <a href="#" class="btn btn-link btn_remove_new_entry" row_id="'+row_id+'"> Remove</a> ';
-			tbl +='</td>';
-			//--->edit options > end	
+	// 		//--->edit options > start
+	// 		tbl +='<td>';			 
+	// 			tbl +='  <a href="#" class="btn btn-link btn_new" row_id="'+row_id+'" > Add Entry</a>   | ';
+	// 			tbl +='  <a href="#" class="btn btn-link btn_remove_new_entry" row_id="'+row_id+'"> Remove</a> ';
+	// 		tbl +='</td>';
+	// 		//--->edit options > end	
 
-		tbl +='</tr>';
-		tbl_row.last().after(tbl);
+	// 	tbl +='</tr>';
+	// 	tbl_row.last().after(tbl);
 
-		$(document).find('.tbl_code_with_mark').find('tr').last().find('.fname').focus();
-	});
+	// 	$(document).find('.tbl_code_with_mark').find('tr').last().find('.fname').focus();
+	// });
 
 	
-	$(document).on('click', '.btn_remove_new_entry', function(event) 
-	{
-		event.preventDefault();
+	// $(document).on('click', '.btn_remove_new_entry', function(event) 
+	// {
+	// 	event.preventDefault();
 
-		$(this).closest('tr').remove();
-	});
+	// 	$(this).closest('tr').remove();
+	// });
 
-	function alert_msg (msg)
-	{
-		return '<span class="alert_msg text-danger">'+msg+'</span>';
-	}
+	// function alert_msg (msg)
+	// {
+	// 	return '<span class="alert_msg text-danger">'+msg+'</span>';
+	// }
 
-	$(document).on('click', '.btn_new', function(event) 
-	{
-		event.preventDefault();
+	// $(document).on('click', '.btn_new', function(event) 
+	// {
+	// 	event.preventDefault();
 		
-		var ele_this = $(this);
-		var ele = ele_this.closest('tr');
+	// 	var ele_this = $(this);
+	// 	var ele = ele_this.closest('tr');
 		
-		//remove all old alerts
-		ele.find('.alert_msg').remove();
+	// 	//remove all old alerts
+	// 	ele.find('.alert_msg').remove();
 
-		//get row id
-		var row_id = $(this).attr('row_id');
+	// 	//get row id
+	// 	var row_id = $(this).attr('row_id');
 
-		//get field names
-		var fname = ele.find('.fname');
-		var lname = ele.find('.lname');
-		var email = ele.find('.email');
+	// 	//get field names
+	// 	var fname = ele.find('.fname');
+	// 	var lname = ele.find('.lname');
+	// 	var email = ele.find('.email');
 
 
-		if(fname.html() == "")
-		{
-			fname.focus();
-			fname.after(alert_msg('Enter First Name'));
-		}
-		else if(lname.html() == "")
-		{
-			lname.focus();
-			lname.after(alert_msg('Enter Last Name'));
-		}
-		else if(email.html() == "")
-		{
-			email.focus();
-			email.after(alert_msg('Enter Email'));
-		}
-		else
-		{
-			var data_obj=
-			{
-				call_type:'new_row_entry',
-				row_id:row_id,
-				fname:fname.html(),
-				lname:lname.html(),
-				email:email.html(),
-			};	
+	// 	if(fname.html() == "")
+	// 	{
+	// 		fname.focus();
+	// 		fname.after(alert_msg('Enter First Name'));
+	// 	}
+	// 	else if(lname.html() == "")
+	// 	{
+	// 		lname.focus();
+	// 		lname.after(alert_msg('Enter Last Name'));
+	// 	}
+	// 	else if(email.html() == "")
+	// 	{
+	// 		email.focus();
+	// 		email.after(alert_msg('Enter Email'));
+	// 	}
+	// 	else
+	// 	{
+	// 		var data_obj=
+	// 		{
+	// 			call_type:'new_row_entry',
+	// 			row_id:row_id,
+	// 			fname:fname.html(),
+	// 			lname:lname.html(),
+	// 			email:email.html(),
+	// 		};	
 			
-			ele_this.html('<p class="bg-warning">Please wait....adding your new row</p>');
+	// 		ele_this.html('<p class="bg-warning">Please wait....adding your new row</p>');
 
-			$.post(ajax_url, data_obj, function(data) 
-			{
-				var d1 = JSON.parse(data);
+	// 		$.post(ajax_url, data_obj, function(data) 
+	// 		{
+	// 			var d1 = JSON.parse(data);
 
-				var tbl = '';
-				tbl +='<a href="#" class="btn btn-link btn_edit" row_id="'+row_id+'" > Edit</a>';
-				tbl +='<a href="#" class="btn btn-link btn_save"  row_id="'+row_id+'" style="display:none;"> Save</a>';
-				tbl +='<a href="#" class="btn btn-link btn_cancel" row_id="'+row_id+'" style="display:none;"> Cancel</a>';
-				tbl +='<a href="#" class="btn btn-link text-warning btn_delete" row_id="'+row_id+'" style="display:none;" > Delete</a>';
+	// 			var tbl = '';
+	// 			tbl +='<a href="#" class="btn btn-link btn_edit" row_id="'+row_id+'" > Edit</a>';
+	// 			tbl +='<a href="#" class="btn btn-link btn_save"  row_id="'+row_id+'" style="display:none;"> Save</a>';
+	// 			tbl +='<a href="#" class="btn btn-link btn_cancel" row_id="'+row_id+'" style="display:none;"> Cancel</a>';
+	// 			tbl +='<a href="#" class="btn btn-link text-warning btn_delete" row_id="'+row_id+'" style="display:none;" > Delete</a>';
 
-				if(d1.status == "error")
-				{
-					var msg = ''
-					+ '<h3>There was an error while trying to add your entry</h3>'
-					+'<pre class="bg-danger">'+JSON.stringify(data_obj, null, 2) +'</pre>'
-					+'';
+	// 			if(d1.status == "error")
+	// 			{
+	// 				var msg = ''
+	// 				+ '<h3>There was an error while trying to add your entry</h3>'
+	// 				+'<pre class="bg-danger">'+JSON.stringify(data_obj, null, 2) +'</pre>'
+	// 				+'';
 
-					$('.post_msg').html(msg);
-				}
-				else if(d1.status == "success")
-				{
-					ele_this.closest('td').html(tbl);
-					ele.find('.new_row_data').removeClass('bg-warning');
-					ele.find('.new_row_data').toggleClass('new_row_data row_data');
-				}
-			});
-		}
-	});
+	// 				$('.post_msg').html(msg);
+	// 			}
+	// 			else if(d1.status == "success")
+	// 			{
+	// 				ele_this.closest('td').html(tbl);
+	// 				ele.find('.new_row_data').removeClass('bg-warning');
+	// 				ele.find('.new_row_data').toggleClass('new_row_data row_data');
+	// 			}
+	// 		});
+	// 	}
+	// });
 
 
 
-	$(document).on('click', '.btn_delete', function(event) 
-	{
-		event.preventDefault();
+	// $(document).on('click', '.btn_delete', function(event) 
+	// {
+	// 	event.preventDefault();
 
-		var ele_this = $(this);
-		var row_id = ele_this.attr('row_id');
-		var data_obj=
-		{
-			call_type:'delete_row_entry',
-			row_id:row_id,
-		};	
+	// 	var ele_this = $(this);
+	// 	var row_id = ele_this.attr('row_id');
+	// 	var data_obj=
+	// 	{
+	// 		call_type:'delete_row_entry',
+	// 		row_id:row_id,
+	// 	};	
 		 		 
-		ele_this.html('<p class="bg-warning">Please wait....deleting your entry</p>')
-		$.post(ajax_url, data_obj, function(data) 
-		{ 
-			var d1 = JSON.parse(data); 
-			if(d1.status == "error")
-			{
-				var msg = ''
-				+ '<h3>There was an error while trying to add your entry</h3>'
-				+'<pre class="bg-danger">'+JSON.stringify(data_obj, null, 2) +'</pre>'
-				+'';
+	// 	ele_this.html('<p class="bg-warning">Please wait....deleting your entry</p>')
+	// 	$.post(ajax_url, data_obj, function(data) 
+	// 	{ 
+	// 		var d1 = JSON.parse(data); 
+	// 		if(d1.status == "error")
+	// 		{
+	// 			var msg = ''
+	// 			+ '<h3>There was an error while trying to add your entry</h3>'
+	// 			+'<pre class="bg-danger">'+JSON.stringify(data_obj, null, 2) +'</pre>'
+	// 			+'';
 
-				$('.post_msg').html(msg);
-			}
-			else if(d1.status == "success")
-			{
-				ele_this.closest('tr').css('background','red').slideUp('slow');				 
-			}
-		});
-	});
+	// 			$('.post_msg').html(msg);
+	// 		}
+	// 		else if(d1.status == "success")
+	// 		{
+	// 			ele_this.closest('tr').css('background','red').slideUp('slow');				 
+	// 		}
+	// 	});
+	// });
 	
 });
 </script>
