@@ -4,27 +4,38 @@
 <div class="container-md" style="padding-bottom: 0ox;">
     <div class="row">
         <div class="col-12">
-            <form style="padding-top: 80px;">
+            <form action="/new-employee" method="POST" style="padding-top: 80px;">
                 <h1 class="text-center text-primary" style="padding-top: 10px;padding-bottom: 10px;">New Employee</h1>
-                <div class="form-group" id="noId">
-                    <label for="noId">No Id</label>
-                    <input class="fform-check-input" type="checkbox" name="noId" value="true">
-                </div>
+                <% if(error) { %>
+                    <p style="color:red;font-size: small;text-align: center;"> <strong> <%= error %> </strong></p>
+                <% } %>
+                <% if(message) { %>
+                    <p style="color:green;font-size: small;text-align: center;"> <strong> <%= message %> </strong></p>
+                <% } %>
                 <div class="form-group" id="eId-input">
                     <label for="employeeId">Employee Id</label>
                     <input class="form-control" type="text" name="employeeId">
                 </div>
                 <div class="form-group" id="fname-input-1">
                     <label for="firstname">First Name</label>
-                    <input class="form-control" type="text" name="firstname">
+                    <input class="form-control" type="text" name="firstName">
+                </div>
+                <div class="form-group" id="fname-input-1">
+                    <label for="firstname">Middle Name</label>
+                    <input class="form-control" type="text" name="middleName">
                 </div>
                 <div class="form-group" id="lname-input">
                     <label for="lastname">Last Name</label>
-                    <input class="form-control" type="text" name="lastname">
+                    <input class="form-control" type="text" name="lastName">
                 </div>
                 <button class="btn btn-primary btn-block button-primary" type="submit">Submit</button>
             </form>
         </div>
     </div>
 </div>
-<% include ./partials/_footer.ejs%>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

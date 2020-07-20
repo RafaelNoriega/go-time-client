@@ -1,4 +1,4 @@
-
+<script type="text/javascript">
 $(document).ready(function($)
 { 	 
     //search with date filters
@@ -13,7 +13,7 @@ $(document).ready(function($)
 
 	function create_html_table (tbl_data)
 	{
-		//--->create data table > start
+        console.log("<%= user.role %>");
 		var tbl = '';
 		tbl +='<table id="employee-data" class="table table-hover tbl_code_with_mark">'
 			//--->create table header > start
@@ -38,7 +38,6 @@ $(document).ready(function($)
 			
 			//--->create table body > start
 			tbl +='<tbody>';
-                console.log('<%user%>')
 
 				//--->create table body rows > start
 				$.each(tbl_data, function(index, val) 
@@ -48,13 +47,14 @@ $(document).ready(function($)
 					//loop through ajax row data
 					tbl +='<tr row_id="'+row_id+'">';
                         tbl +='<td ><div class="row_data" edit_type="click" col_name="date">'+val['date']+'</div></td>';
-                        if(val['role'] === 'admin'){
-                            tbl +='<td ><div class="row_data" edit_type="click" col_name="employeeNumber">'+val['id']+'</div></td>';
-                            tbl +='<td ><div class="row_data" edit_type="click" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
-                        }else if(val['role'] === 'user'){
-                            bl +='<td ><div class="row_data" edit_type="button" col_name="employeeNumber">'+val['id']+'</div></td>';
-                            tbl +='<td ><div class="row_data" edit_type="button" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
-                        }
+						<% if(user.role === "admin"){%>
+                        tbl +='<td ><div class="row_data" edit_type="click" col_name="employeeNumber">'+val['id']+'</div></td>';
+                        tbl +='<td ><div class="row_data" edit_type="click" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
+						<%}%>
+						<% if(user.role === "user"){%>
+							tbl +='<td ><div class="row_data" edit_type="button" col_name="employeeNumber">'+val['id']+'</div></td>';
+                        	tbl +='<td ><div class="row_data" edit_type="button" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
+						<%}%>
 						tbl +='<td ><div class="row_data" edit_type="click" col_name="hours">'+parseInt(val['hours'])+'</div></td>';
 						tbl +='<td ><div class="row_data" edit_type="click" col_name="break">'+val['breakTime']+'</div></td>';
 						tbl +='<td ><div class="row_data" edit_type="click" col_name="pieces1">'+val['pieces1']+'</div></td>';
@@ -517,3 +517,4 @@ $(document).ready(function($)
 	});
 	
 });
+</script>

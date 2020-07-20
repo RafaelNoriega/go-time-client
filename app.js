@@ -8,7 +8,7 @@ const logger          = require('morgan');
 const bodyParser      = require('body-parser');
 const passport        = require('passport');
 const flash           = require("connect-flash");
-
+const ejs             = require('ejs');
 
 const passportSetup   = require('./config/passport-config');
 const indexRouter = require('./routes/index');
@@ -19,7 +19,6 @@ const app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
 
 app.use(logger('dev'));
 app.use(express.json());
