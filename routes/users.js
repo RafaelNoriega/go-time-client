@@ -22,7 +22,7 @@ router.post('/login', passport.authenticate('user',
   }),
 (req, res, next) => {
 
-  res.redirect('/new-employee')
+  res.redirect('/time')
 });
 
 router.get('/logout', (req, res, next)=>{

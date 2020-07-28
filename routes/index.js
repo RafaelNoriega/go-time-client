@@ -21,4 +21,7 @@ router.get('/records', userCheck, controllers.timeRecords);
 router.get('/records/data', userCheck, controllers.timeRecordsData)
 
 router.post('/records/data', userCheck, controllers.timeRecordsDataUpdate)
+
+router.post('/records/data/export', userCheck, controllers.timeRecordsDataExport)
+
 module.exports = router;

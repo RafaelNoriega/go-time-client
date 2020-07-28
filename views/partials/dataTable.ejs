@@ -7,30 +7,35 @@ $(document).ready(function($)
         console.log('searching by date')
         let startDate = $(document).find('#startDate').val();
         let endDate = $(document).find('#endDate').val();
-        console.log(startDate, endDate);
-        $.get(`records/data?startDate=${startDate}&endDate=${endDate}`, data => create_html_table(data));
+		let costCenter = $(document).find('#costCenter').val();
+		let employeeId = $(document).find('#employeeId').val();
+
+        $.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
     });
 
 	function create_html_table (tbl_data)
 	{
-        console.log("<%= user.role %>");
 		var tbl = '';
-		tbl +='<table id="employee-data" class="table table-hover tbl_code_with_mark">'
+		tbl +='<table id="employee-data" class="table table-striped text-center">'
 			//--->create table header > start
 			tbl +='<thead class="bill-header cs">';
-				tbl +='<tr>';
-				tbl +='<th>Date</th>';
-				tbl +='<th>Employee Number</th>';
-				tbl +='<th>Employee Name</th>';
-                tbl +='<th>Hours</th>';
-                tbl +='<th>Break (min)</th>';
-                tbl +='<th>Pieces 1</th>';
-                tbl +='<th>Rate 1</th>';  
-                tbl +='<th>Pieces 2</th>';
-                tbl +='<th>Rate 2</th>';  
-                tbl +='<th>Pieces 3</th>';
-                tbl +='<th>Rate 3</th>';                
-                tbl +='<th>Table</th>';
+				tbl +='<tr">';
+				tbl +='<th scope="col">Date</th>';
+				tbl +='<th scope="col">Employee Number</th>';
+				tbl +='<th scope="col">Employee Name</th>';
+                tbl +='<th scope="col">Hours</th>';
+                tbl +='<th scope="col">Break (min)</th>';
+                tbl +='<th scope="col">Pieces 1</th>';
+                tbl +='<th scope="col">Rate 1</th>';  
+                tbl +='<th scope="col">Pieces 2</th>';
+                tbl +='<th scope="col">Rate 2</th>';  
+                tbl +='<th scope="col">Pieces 3</th>';
+                tbl +='<th scope="col">Rate 3</th>';                
+                tbl +='<th scope="col">Table</th>';
+				tbl +='<th scope="col">Grower</th>';
+				<% if(user.role === "admin"){%>
+					tbl +='<th scope="col">Exported</th>';
+				<%}%>
                 // tbl +='<th>Edit</th>';
 				tbl +='</tr>';
 			tbl +='</thead>';
@@ -39,6 +44,9 @@ $(document).ready(function($)
 			//--->create table body > start
 			tbl +='<tbody>';
 
+				if(tbl_data.length == 0){
+					tbl += 'No Data Found';
+				}
 				//--->create table body rows > start
 				$.each(tbl_data, function(index, val) 
 				{
@@ -46,25 +54,28 @@ $(document).ready(function($)
 					var row_id = val['sk'];
 					//loop through ajax row data
 					tbl +='<tr row_id="'+row_id+'">';
-                        tbl +='<td ><div class="row_data" edit_type="click" col_name="date">'+val['date']+'</div></td>';
+                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="date">'+val['date']+'</div></td>';
 						<% if(user.role === "admin"){%>
-                        tbl +='<td ><div class="row_data" edit_type="click" col_name="employeeNumber">'+val['id']+'</div></td>';
-                        tbl +='<td ><div class="row_data" edit_type="click" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
+                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeNumber">'+val['id']+'</div></td>';
+                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
 						<%}%>
 						<% if(user.role === "user"){%>
-							tbl +='<td ><div class="row_data" edit_type="button" col_name="employeeNumber">'+val['id']+'</div></td>';
-                        	tbl +='<td ><div class="row_data" edit_type="button" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="button" col_name="employeeNumber">'+val['id']+'</div></td>';
+                        	tbl +='<td scope="row" ><div class="row_data" edit_type="button" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
 						<%}%>
-						tbl +='<td ><div class="row_data" edit_type="click" col_name="hours">'+parseInt(val['hours'])+'</div></td>';
-						tbl +='<td ><div class="row_data" edit_type="click" col_name="break">'+val['breakTime']+'</div></td>';
-						tbl +='<td ><div class="row_data" edit_type="click" col_name="pieces1">'+val['pieces1']+'</div></td>';
-						tbl +='<td ><div class="row_data" edit_type="click" col_name="rate1">'+val['rate1']+'</div></td>';
-						tbl +='<td ><div class="row_data" edit_type="click" col_name="pieces2">'+val['pieces2']+'</div></td>';
-                        tbl +='<td ><div class="row_data" edit_type="click" col_name="rate2">'+val['rate2']+'</div></td>';
-                        tbl +='<td ><div class="row_data" edit_type="click" col_name="pieces3">'+val['pieces3']+'</div></td>';
-						tbl +='<td ><div class="row_data" edit_type="click" col_name="rate3">'+val['rate3']+'</div></td>';
-                        tbl +='<td ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
-
+						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="hours">'+parseInt(val['hours'])+'</div></td>';
+						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="break">'+val['breakTime']+'</div></td>';
+						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces1">'+val['pieces1']+'</div></td>';
+						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate1">'+val['rate1']+'</div></td>';
+						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces2">'+val['pieces2']+'</div></td>';
+                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate2">'+val['rate2']+'</div></td>';
+                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces3">'+val['pieces3']+'</div></td>';
+						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate3">'+val['rate3']+'</div></td>';
+                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
+						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="costCenter">'+val['costCenter']+'</div></td>';
+						<% if(user.role === "admin"){%>
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';
+						<%}%>
 						//--->edit options > start
 						// tbl +='<td>';						 
 						// 	tbl +='<span class="btn_edit" > <a href="#" class="btn btn-primary " row_id="'+row_id+'" > <i class="fas fa-pencil-alt" style="font-size: 15px;"></i></a> </span>';
@@ -80,29 +91,25 @@ $(document).ready(function($)
 			tbl +='</tbody>';
 			//--->create table body > end
             tbl += '<tfoot>';
-            tbl += '<tr>';
-            tbl += '<td class="font-weight-bold">Total</td>';
-            tbl += '<td></td>';
-            tbl += '<td></td>';
-            tbl += '<td id="hoursTotals" class="font-weight-bold"></td>';
-            tbl += '<td id="breakTotals" class="font-weight-bold"></td>';
-            tbl += '<td id="pieces1Totals" class="font-weight-bold"></td>';
-            tbl += '<td></td>';
-            tbl += '<td id="pieces2Totals" class="font-weight-bold"></td>';
-            tbl += '<td></td>';
-            tbl += '<td id="pieces3Totals" class="font-weight-bold"></td>';
-            tbl += '<td></td>';
-            tbl += '<td></td>';
-            tbl += '<td></td>';
-            tbl += '</tr>';
-            tbl += '</tfoot>';
+            tbl += '<td scope="row">';
+            tbl += '<td scope="row" class="font-weight-bold">Total</td>';
+            tbl += '<td scope="row"></td>';
+            tbl += `<td scope="row" class="font-weight-bold">${tbl_data.length}</td>`;
+            tbl += '<td scope="row" id="hoursTotals" class="font-weight-bold"></td>';
+            tbl += '<td scope="row" id="breakTotals" class="font-weight-bold"></td>';
+            tbl += '<td scope="row" id="pieces1Totals" class="font-weight-bold"></td>';
+            tbl += '<td scope="row"></td>';
+            tbl += '<td scope="row" id="pieces2Totals" class="font-weight-bold"></td>';
+            tbl += '<td scope="row"></td>';
+            tbl += '<td scope="row" id="pieces3Totals" class="font-weight-bold"></td>';
+            tbl += '<td scope="row"></td>';
+            tbl += '<td scope="row"></td>';
+			<% if(user.role === "admin"){%>
+				tbl += '<td scope="row"></td>';
+			<%}%>
+		tbl += '</tfoot>';
 		tbl +='</table>';
 		//--->create data table > end
-
-		//add new table row
-		tbl +='<div class="text-center">';
-			tbl +='<span class="btn btn-primary btn_new_row">Export</span>';
-		tbl +='<div>';
 
 		//out put table data
 		$(document).find('.tbl_user_data').html(tbl);
@@ -144,12 +151,12 @@ $(document).ready(function($)
 	}
 
 	//--->create table via ajax call > start
-    let startDate = $(document).find('#startDate').val();
-    let endDate = $(document).find('#endDate').val();
-    $.get(`records/data?startDate=${startDate}&endDate=${endDate}`, data => create_html_table(data));
+        let startDate = $(document).find('#startDate').val();
+        let endDate = $(document).find('#endDate').val();
+		let costCenter = $(document).find('#costCenter').val();
+		let employeeId = $(document).find('#employeeId').val();
+        $.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
     
-	//create_html_table(data);
-
 	//--->create table via ajax call > end
 
 	//--->make div editable > start
@@ -210,17 +217,19 @@ $(document).ready(function($)
 			//ajax api json data			 
 			let data_obj = 
 			{
-				row_id:    row_id,
-				col_name:  col_name,
-				col_val:   col_val,
+				row_id,
+				col_name,
+				col_val,
 				call_type: 'single_entry',				
 			};
 			
             //****** call db api to update the database record
            let response =  await $.post('records/data', data_obj);
-           let startDate = $(document).find('#startDate').val();
-           let endDate = $(document).find('#endDate').val();
-           $.get(`records/data?startDate=${startDate}&endDate=${endDate}`, data => create_html_table(data));
+			let startDate = $(document).find('#startDate').val();
+			let endDate = $(document).find('#endDate').val();
+			let costCenter = $(document).find('#costCenter').val();
+			let employeeId = $(document).find('#employeeId').val();
+			$.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
 			
 		}
 		else
@@ -229,141 +238,164 @@ $(document).ready(function($)
 		}
 		
 	})	
+	
+	$(document).on('click', '.btn_export_file', event => {
+		console.log("click");
+        let startDate = $(document).find('#startDate').val();
+        let endDate = $(document).find('#endDate').val();
+		let costCenter = $(document).find('#costCenter').val();
+		let employeeId = $(document).find('#employeeId').val();
+		let body = {
+			startDate,
+			endDate,
+			costCenter,
+			employeeId
+		};
+        
+		$(document).find('#startDateInput').val(startDate);
+		$(document).find('#endDateInput').val(endDate);
+		$(document).find('#costCenterInput').val(costCenter);
+		$(document).find('#employeeIdInput').val(employeeId);
+		$(document).find('#exportForm').submit();
+		$.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
+
+	})
 	//--->save single field data > end
 
 	//--->button > edit > start	
-	$(document).on('click', '.btn_edit', function(event) 
-	{
-		event.preventDefault();
-		var tbl_row = $(this).closest('tr');
+	// $(document).on('click', '.btn_edit', function(event) 
+	// {
+	// 	event.preventDefault();
+	// 	var tbl_row = $(this).closest('tr');
 
-		var row_id = tbl_row.attr('row_id');
+	// 	var row_id = tbl_row.attr('row_id');
 
-		tbl_row.find('.btn_save').show();
-		tbl_row.find('.btn_cancel').show();
-		tbl_row.find('.btn_delete').show();
+	// 	tbl_row.find('.btn_save').show();
+	// 	tbl_row.find('.btn_cancel').show();
+	// 	tbl_row.find('.btn_delete').show();
 
-		//hide edit button
-		tbl_row.find('.btn_edit').hide(); 
+	// 	//hide edit button
+	// 	tbl_row.find('.btn_edit').hide(); 
 
-		//make the whole row editable
-		tbl_row.find('.row_data')
-		.attr('contenteditable', 'true')
-		.attr('edit_type', 'button')
-		.addClass('border border-success')
-		.css('padding','3px')
+	// 	//make the whole row editable
+	// 	tbl_row.find('.row_data')
+	// 	.attr('contenteditable', 'true')
+	// 	.attr('edit_type', 'button')
+	// 	.addClass('border border-success')
+	// 	.css('padding','3px')
 
-		//--->add the original entry > start
-		tbl_row.find('.row_data').each(function(index, val) 
-		{  
-			//this will help in case user decided to click on cancel button
-			$(this).attr('original_entry', $(this).html());
-		}); 		
-		//--->add the original entry > end
+	// 	//--->add the original entry > start
+	// 	tbl_row.find('.row_data').each(function(index, val) 
+	// 	{  
+	// 		//this will help in case user decided to click on cancel button
+	// 		$(this).attr('original_entry', $(this).html());
+	// 	}); 		
+	// 	//--->add the original entry > end
 
-	});
+	// });
 	//--->button > edit > end
 
 
 	//--->button > cancel > start	
-	$(document).on('click', '.btn_cancel', function(event) 
-	{
-		event.preventDefault();
+	// $(document).on('click', '.btn_cancel', function(event) 
+	// {
+	// 	event.preventDefault();
 
-		var tbl_row = $(this).closest('tr');
+	// 	var tbl_row = $(this).closest('tr');
 
-		var row_id = tbl_row.attr('row_id');
+	// 	var row_id = tbl_row.attr('row_id');
 
-		//hide save and cacel buttons
-		tbl_row.find('.btn_save').hide();
-		tbl_row.find('.btn_cancel').hide();
-		tbl_row.find('.btn_delete').hide();
+	// 	//hide save and cacel buttons
+	// 	tbl_row.find('.btn_save').hide();
+	// 	tbl_row.find('.btn_cancel').hide();
+	// 	tbl_row.find('.btn_delete').hide();
 
-		//show edit button
-		tbl_row.find('.btn_edit').show();
+	// 	//show edit button
+	// 	tbl_row.find('.btn_edit').show();
 
-		//make the whole row editable
-		tbl_row.find('.row_data')
-		.attr('edit_type', 'click')
-		.removeClass('border border-success')
-		.css('padding','') 
+	// 	//make the whole row editable
+	// 	tbl_row.find('.row_data')
+	// 	.attr('edit_type', 'click')
+	// 	.removeClass('border border-success')
+	// 	.css('padding','') 
 
-		tbl_row.find('.row_data').each(function(index, val) 
-		{   
-			$(this).html( $(this).attr('original_entry') ); 
-		});  
-	});
+	// 	tbl_row.find('.row_data').each(function(index, val) 
+	// 	{   
+	// 		$(this).html( $(this).attr('original_entry') ); 
+	// 	});  
+	// });
 	//--->button > cancel > end
 
 	
 	//--->save whole row entery > start	
-	$(document).on('click', '.btn_save', function(event) 
-	{
-		event.preventDefault();
-		var tbl_row = $(this).closest('tr');
+	// $(document).on('click', '.btn_save', function(event) 
+	// {
+	// 	event.preventDefault();
+	// 	var tbl_row = $(this).closest('tr');
 
-		var row_id = tbl_row.attr('row_id');
+	// 	var row_id = tbl_row.attr('row_id');
 
 		
-		//hide save and cacel buttons
-		tbl_row.find('.btn_save').hide();
-		tbl_row.find('.btn_cancel').hide();
-		tbl_row.find('.btn_delete').hide();
+	// 	//hide save and cacel buttons
+	// 	tbl_row.find('.btn_save').hide();
+	// 	tbl_row.find('.btn_cancel').hide();
+	// 	tbl_row.find('.btn_delete').hide();
 
-		//show edit button
-		tbl_row.find('.btn_edit').show();
+	// 	//show edit button
+	// 	tbl_row.find('.btn_edit').show();
 
 
-		//make the whole row editable
-		tbl_row.find('.row_data')
-		.attr('edit_type', 'click')
-		.removeClass('bg-warning')
-		.css('padding','') 
+	// 	//make the whole row editable
+	// 	tbl_row.find('.row_data')
+	// 	.attr('edit_type', 'click')
+	// 	.removeClass('bg-warning')
+	// 	.css('padding','') 
 
-		//--->get row data > start
-		var arr = {}; 
-		tbl_row.find('.row_data').each(function(index, val) 
-		{   
-			var col_name = $(this).attr('col_name');  
-			var col_val  =  $(this).html();
-			arr[col_name] = col_val;
-		});
-		//--->get row data > end
+	// 	//--->get row data > start
+	// 	var arr = {}; 
+	// 	tbl_row.find('.row_data').each(function(index, val) 
+	// 	{   
+	// 		var col_name = $(this).attr('col_name');  
+	// 		var col_val  =  $(this).html();
+	// 		arr[col_name] = col_val;
+	// 	});
+	// 	//--->get row data > end
 
-		//get row id value
-		arr['row_id'] = row_id;
+	// 	//get row id value
+	// 	arr['row_id'] = row_id;
 
-		//out put to show
-		$('.post_msg').html( '<pre class="bg-success">'+JSON.stringify(arr, null, 2) +'</pre>');
+	// 	//out put to show
+	// 	$('.post_msg').html( '<pre class="bg-success">'+JSON.stringify(arr, null, 2) +'</pre>');
 
-		//add call type for ajax call
-		arr['call_type'] = 'row_entry';
+	// 	//add call type for ajax call
+	// 	arr['call_type'] = 'row_entry';
 
-		//call ajax api to update the database record
-		$.post(ajax_url, arr, function(data) 
-		{
-			var d1 = JSON.parse(data);
-			if(d1.status == "error")
-			{
-				var msg = ''
-				+ '<h3>There was an error while trying to update your entry</h3>'
-				+'<pre class="bg-danger">'+JSON.stringify(arr, null, 2) +'</pre>'
-				+'';
+	// 	//call ajax api to update the database record
+	// 	$.post(ajax_url, arr, function(data) 
+	// 	{
+	// 		var d1 = JSON.parse(data);
+	// 		if(d1.status == "error")
+	// 		{
+	// 			var msg = ''
+	// 			+ '<h3>There was an error while trying to update your entry</h3>'
+	// 			+'<pre class="bg-danger">'+JSON.stringify(arr, null, 2) +'</pre>'
+	// 			+'';
 
-				$('.post_msg').html(msg);
-			}
-			else if(d1.status == "success")
-			{
-				var msg = ''
-				+ '<h3>Successfully updated your entry</h3>'
-				+'<pre class="bg-success">'+JSON.stringify(arr, null, 2) +'</pre>'
-				+'';
+	// 			$('.post_msg').html(msg);
+	// 		}
+	// 		else if(d1.status == "success")
+	// 		{
+	// 			var msg = ''
+	// 			+ '<h3>Successfully updated your entry</h3>'
+	// 			+'<pre class="bg-success">'+JSON.stringify(arr, null, 2) +'</pre>'
+	// 			+'';
 
-				$('.post_msg').html(msg);
-			}			
-		});
-	});
+	// 			$('.post_msg').html(msg);
+	// 		}			
+	// 	});
+	// });
 	//--->save whole row entery > end
+
 
 
     //---> Add new record row
