@@ -1,17 +1,27 @@
+:root {
+  --primary-color: #006E90;
+  --secondary-color: #F77F00;
+}
+
 body html{
   height: 100%;
 }
 .btn-primary {
-  background-color: rgb(244,71,107);
+  background-color: var(--primary-color);
+  border: none;
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
   border: none;
 }
 
 .text-primary {
-  color: rgb(244,71,107) !important;
+  color: var(--primary-color) !important;
 }
 
 .navbar-light .navbar-brand {
-  color: rgb(244,71,107);
+  color: var(--primary-color);
 }
 
 .text-primary.d-flex.justify-content-center.footer-basic {
@@ -157,7 +167,7 @@ body html{
   text-align: center;
   padding: 0 0 40px;
   font-size: 100px;
-  color: rgb(244,71,107);
+  color: var(--primary-color);
 }
 
 .login-clean form .form-control {
@@ -173,7 +183,7 @@ body html{
 }
 
 .login-clean form .btn-primary {
-  background: #f4476b;
+  background: var(--primary-color);
   border: none;
   border-radius: 4px;
   padding: 11px;
@@ -184,7 +194,7 @@ body html{
 }
 
 .login-clean form .btn-primary:hover, .login-clean form .btn-primary:active {
-  background: #eb3b60;
+  background:var(--secondary-color);
 }
 
 .login-clean form .btn-primary:active {

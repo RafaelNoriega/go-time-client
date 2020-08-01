@@ -72,11 +72,26 @@ exports.getTime = async (req, res, next) => {
                 ":activeValue": true
             }
         };
-        
+        //get all employees under this foreman
         const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
-        //console.log(Items)
+
+        params = {
+            TableName : process.env.AWS_DATABASE,
+            KeyConditionExpression: `#pk = :userPK AND #sk = :sk`,
+            ExpressionAttributeNames:{
+                "#pk": "pk",
+                "#sk": "sk",
+            },
+            ExpressionAttributeValues: {
+                ":userPK": user.pk,
+                ":sk": 'METADATA'
+            }
+        }
+        let costCenters = await docClient.query(params).promise().catch(error => console.log(error));
+        costCenters = costCenters.Items[0].costCenters; 
+        
         Items.sort((a, b) => (a.lastName > b.lastName) ? 1 : -1)
-        res.render('time', {user:req.user, employees:Items, day, message: req.flash('message'), error: req.flash('error')});
+        res.render('time', {user:req.user, employees:Items, day, costCenters, message: req.flash('message'), error: req.flash('error')});
     } catch (error) {
         
     }
