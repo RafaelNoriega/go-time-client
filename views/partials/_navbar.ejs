@@ -1,5 +1,8 @@
-<nav class="navbar navbar-light navbar-expand-md">
-    <div class="container-fluid"><a class="navbar-brand" href="#">Go Time</a><button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1"><span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
+<nav class="navbar navbar-light navbar-expand-md pb-5">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Go Time</a>
+        <button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1">
+            <span class="sr-only">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse"
             id="navcol-1">
             <ul class="nav navbar-nav mr-auto">
@@ -7,15 +10,20 @@
                 <li class="nav-item" role="presentation"><a class="nav-link" href="/new-employee">New Employee</a></li>
                 <li class="nav-item" role="presentation"><a class="nav-link" href="/records">Time Records</a></li>
             </ul>
-            <a class="btn btn-secondary ml-auto" href="/users/logout">Log Out</a>
+
+            <span class="navbar-text ml-2"> 
+                <i class="fas fa-user p-1"></i>
+                <%= `${user.firstName}  ${user.lastName}`%>
+            </span>
+            <span class="navbar-text ml-2" style="display: flex;">
+                <i class="fas fa-map-marker-alt p-1"></i>
+                <%= user.ranch%> 
+            </span>
+            <span class="navbar-text ml-2">
+                <i class="fas fa-users p-1"></i>
+                <%= user.groupId%>
+            </span>
+            <a class="btn btn-secondary ml-2" href="/users/logout">Log Out</a>
         </div>
     </div>
 </nav>
-<div class="row">
-    <div class="col-10 offset-1 text-right">
-        <p><%= `${user.firstName}  ${user.lastName}`%> <br>
-            <%= user.groupId%> <br>
-            <%= user.ranch%>
-        </p>
-    </div>
-</div>

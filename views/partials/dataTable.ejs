@@ -16,7 +16,7 @@ $(document).ready(function($)
 	function create_html_table (tbl_data)
 	{
 		var tbl = '';
-		tbl +='<table id="employee-data" class="table table-striped text-center">'
+		tbl +='<table id="employee-data" class="table table-striped text-center pb-5">'
 			//--->create table header > start
 			tbl +='<thead class="bill-header cs">';
 				tbl +='<tr">';
@@ -93,7 +93,6 @@ $(document).ready(function($)
             tbl += '<tfoot>';
             tbl += '<td scope="row">';
             tbl += '<td scope="row" class="font-weight-bold">Total</td>';
-            tbl += '<td scope="row"></td>';
             tbl += `<td scope="row" class="font-weight-bold">${tbl_data.length}</td>`;
             tbl += '<td scope="row" id="hoursTotals" class="font-weight-bold"></td>';
             tbl += '<td scope="row" id="breakTotals" class="font-weight-bold"></td>';
@@ -104,6 +103,7 @@ $(document).ready(function($)
             tbl += '<td scope="row" id="pieces3Totals" class="font-weight-bold"></td>';
             tbl += '<td scope="row"></td>';
             tbl += '<td scope="row"></td>';
+			tbl += '<td scope="row"></td>';
 			<% if(user.role === "admin"){%>
 				tbl += '<td scope="row"></td>';
 			<%}%>

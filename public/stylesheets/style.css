@@ -1,6 +1,7 @@
 :root {
   --primary-color: #006E90;
   --secondary-color: #F77F00;
+  --alternate-color: #FDF0D5;
 }
 
 body html{
@@ -157,8 +158,7 @@ body html{
 .login-clean form {
   height: 100%;
   margin: 0 auto;
-  background-color: #ffffff;
-  padding: 40px;
+  padding: 50px;
   border-radius: 4px;
   color: #505e6c;
 }
@@ -169,21 +169,23 @@ body html{
   font-size: 100px;
   color: var(--primary-color);
 }
+.form-control{
+  border: 1px solid var(--primary-color);
+}
 
 .login-clean form .form-control {
   background: #f7f9fc;
-  border: none;
-  border-bottom: 1px solid #dfe7f1;
-  border-radius: 0;
-  box-shadow: none;
-  outline: none;
   color: inherit;
-  text-indent: 8px;
+  text-align: center;
   height: 42px;
 }
-
-.login-clean form .btn-primary {
+.btn-primary{
   background: var(--primary-color);
+}
+.btn-primary:hover{
+  background: var(--secondary-color);
+}
+.login-clean form .btn-primary {
   border: none;
   border-radius: 4px;
   padding: 11px;
@@ -213,5 +215,9 @@ body html{
 .login-clean form .forgot:hover, .login-clean form .forgot:active {
   opacity: 1;
   text-decoration: none;
+}
+
+.navbar-text{
+  display:flex;
 }
 

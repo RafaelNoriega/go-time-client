@@ -309,322 +309,397 @@ exports.timeRecordsDataUpdate = async (req, res, next) => {
 }
 
 exports.timeRecordsDataExport = async (req, res, next) => {
-    try {
-        let user = req.user;
-        const {startDate, endDate, costCenter, employeeId} = req.body
-        let params;
+    function fetchData(employeeId, costCenter, startDate, endDate, user){
+        return new Promise(  (resolve, reject) => {
+            let params;
 
-        if(employeeId !== '' && costCenter === 'ALL'){
-            params = {
-                TableName : process.env.AWS_DATABASE,
-                KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
-                FilterExpression: "#date between :startDate and :endDate AND #id = :id",
-                ExpressionAttributeNames:{
-                    "#pk": "pk",
-                    "#sk": "sk",
-                    "#date": "date",
-                    "#id": "id"
-                },
-                ExpressionAttributeValues: {
-                    ":userPK": user.pk,
-                    ":sk": `TIME#${user.groupId}`,
-                    ":startDate": startDate,
-                    ":endDate": endDate,
-                    ":id": employeeId
+            if(employeeId !== '' && costCenter === 'ALL'){
+                params = {
+                    TableName : process.env.AWS_DATABASE,
+                    KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
+                    FilterExpression: "#date between :startDate and :endDate AND #id = :id",
+                    ExpressionAttributeNames:{
+                        "#pk": "pk",
+                        "#sk": "sk",
+                        "#date": "date",
+                        "#id": "id"
+                    },
+                    ExpressionAttributeValues: {
+                        ":userPK": user.pk,
+                        ":sk": `TIME#${user.groupId}`,
+                        ":startDate": startDate,
+                        ":endDate": endDate,
+                        ":id": employeeId
+                    }
                 }
             }
-        }
-        //filtered Cost Center ONLY
-        else if(costCenter !== 'ALL' && employeeId === ''){
-            params = {
-                TableName : process.env.AWS_DATABASE,
-                KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
-                FilterExpression: "#date between :startDate and :endDate AND #costCenter = :costCenter",
-                ExpressionAttributeNames:{
-                    "#pk": "pk",
-                    "#sk": "sk",
-                    "#date": "date",
-                    "#costCenter": "costCenter"
-                },
-                ExpressionAttributeValues: {
-                    ":userPK": user.pk,
-                    ":sk": `TIME#${user.groupId}`,
-                    ":startDate": startDate,
-                    ":endDate": endDate,
-                    ":costCenter": costCenter
-                }
-            };
-
-        }
-        //filtered both Cost Center AND Employee
-        else if(costCenter !== 'ALL' && employeeId !== ''){
-            params = {
-                TableName : process.env.AWS_DATABASE,
-                KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
-                FilterExpression: "#date between :startDate and :endDate AND #id = :id AND #costCenter = :costCenter",
-                ExpressionAttributeNames:{
-                    "#pk": "pk",
-                    "#sk": "sk",
-                    "#date": "date",
-                    "#costCenter": "costCenter",
-                    "#id": "id"
-                },
-                ExpressionAttributeValues: {
-                    ":userPK": user.pk,
-                    ":sk": `TIME#${user.groupId}`,
-                    ":startDate": startDate,
-                    ":endDate": endDate,
-                    ":costCenter": costCenter,
-                    ":id": employeeId
-                }
-            };
-        }
-        //no filter
-        else if(costCenter === 'ALL' && employeeId === ''){
-            params = {
-                TableName : process.env.AWS_DATABASE,
-                KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
-                FilterExpression: "#date between :startDate and :endDate",
-                ExpressionAttributeNames:{
-                    "#pk": "pk",
-                    "#sk": "sk",
-                    "#date": "date"
-                },
-                ExpressionAttributeValues: {
-                    ":userPK": user.pk,
-                    ":sk": `TIME#${user.groupId}`,
-                    ":startDate": startDate,
-                    ":endDate": endDate
-                }
-            };
-        }
-
-        const {Items} = await docClient.query(params).promise().catch(error => req.flash('error', error));
-        console.log('Rows: ',Items.length)
-
-        let fileBody = '';
-        let hours = 0;
-
-        for(const row of Items){
-            let flag = true;
-            if(row.exported === false){
-
-                if(parseInt(row.pieces1) > 0 && parseFloat(row.rate1) > 0){
-                    flag = false;
-                    console.log('pieces1')
-                    //unused
-                    fileBody += '         ';
-                    //*Employee Id must be 5 characters long
-                    fileBody += row.id;
-                    //*Timecard date must be formated as MM/DD/YYYY
-                    fileBody += moment(row.date).format('MM/DD/YYYY');
-                    //unused
-                    fileBody += '      ';
-                    //*Cost center code
-                    fileBody += row.costCenter + '              ';
-                    //unused
-                    fileBody += '     ';
-                    //piece Unit Type
-                    fileBody += '                ';
-                    //unused
-                    fileBody += '                                                              ';
-                    //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
-                    hours = parseInt(row.hours) - (parseInt(row.breakTime)/60);
-                    fileBody += (hours).toPrecision(7);
-                    //Piece QTY, 10
-                    fileBody += parseInt(row.pieces1).toPrecision(9);
-                    //Piece Rate
-                    fileBody +=parseFloat(row.rate1).toPrecision(7);
-                    //unused
-                    fileBody += '             ';
-                    //Task Name
-                    fileBody += '                              ';
-                    //Pay type
-                    fileBody += 'PC';
-                    // TC rate 10
-                    fileBody += '          ';
-                    //Phase 3
-                    fileBody += '   ';
-                    //unsused 12
-                    fileBody += '            ';
-                    //Equipment Code 25
-                    fileBody += '                         ';
-                    //Implement Code 25
-                    fileBody += '                         ';
-                    //Unused 3
-                    fileBody += '   ';
-                    //CR/LF
-                    fileBody += '\n';
-                }
-                if(parseInt(row.pieces2) > 0 && parseFloat(row.rate2) > 0){
-                    flag=false;
-                    console.log("peices2")
-                    //unused
-                    fileBody += '         ';
-                    //*Employee Id must be 5 characters long
-                    fileBody += row.id;
-                    //*Timecard date must be formated as MM/DD/YYYY
-                    fileBody += moment(row.date).format('MM/DD/YYYY');
-                    //unused
-                    fileBody += '      ';
-                    //*Cost center code
-                    fileBody += row.costCenter + '              ';
-                    //unused
-                    fileBody += '     ';
-                    //piece Unit Type
-                    fileBody += '                ';
-                    //unused
-                    fileBody += '                                                              ';
-                    //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
-                    hours = parseFloat(row.hours) - (parseFloat(row.breakTime)/60);
-                    fileBody += (hours).toPrecision(7);
-                    //Piece QTY, 10
-                    fileBody += parseInt(row.pieces2).toPrecision(9);
-                    //Piece Rate
-                    fileBody += parseFloat(row.rate2).toPrecision(7);
-                    //unused
-                    fileBody += '             ';
-                    //Task Name
-                    fileBody += '                              ';
-                    //Pay type
-                    fileBody += 'PC';
-                    // TC rate 10
-                    fileBody += '          ';
-                    //Phase 3
-                    fileBody += '   ';
-                    //unsused 12
-                    fileBody += '            ';
-                    //Equipment Code 25
-                    fileBody += '                         ';
-                    //Implement Code 25
-                    fileBody += '                         ';
-                    //Unused 3
-                    fileBody += '   ';
-                    //CR/LF
-                    fileBody += '\n';
-                }
-                if(parseInt(row.pieces3) > 0 && parseFloat(row.rate3) > 0){
-                    flag=false;
-                    //unused
-                    fileBody += '         ';
-                    //*Employee Id must be 5 characters long
-                    fileBody += row.id;
-                    //*Timecard date must be formated as MM/DD/YYYY
-                    fileBody += moment(row.date).format('MM/DD/YYYY');
-                    //unused
-                    fileBody += '      ';
-                    //*Cost center code
-                    fileBody += row.costCenter + '              ';
-                    //unused
-                    fileBody += '     ';
-                    //piece Unit Type
-                    fileBody += '                ';
-                    //unused
-                    fileBody += '                                                              ';
-                    //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
-                    hours = parseFloat(row.hours) - (parseFloat(row.breakTime)/60);
-                    fileBody += (hours).toPrecision(7);
-                    //Piece QTY, 10
-                    fileBody += parseInt(row.pieces3).toPrecision(9);
-                    //Piece Rate
-                    fileBody += parseFloat(row.rate3).toPrecision(7);
-                    //unused
-                    fileBody += '             ';
-                    //Task Name
-                    fileBody += '                              ';
-                    //Pay type
-                    fileBody += 'PC';
-                    // TC rate 10
-                    fileBody += '          ';
-                    //Phase 3
-                    fileBody += '   ';
-                    //unsused 12
-                    fileBody += '            ';
-                    //Equipment Code 25
-                    fileBody += '                         ';
-                    //Implement Code 25
-                    fileBody += '                         ';
-                    //Unused 3
-                    fileBody += '   ';
-                    //CR/LF
-                    fileBody += '\n';
-                }
-                if(flag){
-                    //unused
-                    fileBody += '         ';
-                    //*Employee Id must be 5 characters long
-                    fileBody += row.id;
-                    //*Timecard date must be formated as MM/DD/YYYY
-                    fileBody += moment(row.date).format('MM/DD/YYYY');
-                    //unused
-                    fileBody += '      ';
-                    //*Cost center code
-                    fileBody += row.costCenter + '              ';
-                    //unused
-                    fileBody += '     ';
-                    //piece Unit Type
-                    fileBody += '                ';
-                    //unused
-                    fileBody += '                                                              ';
-                    //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
-                    fileBody += parseInt(row.hours).toPrecision(7);
-                    //Piece QTY, 10
-                    fileBody += '          ';
-                    //Piece Rate
-                    fileBody += '        ';
-                    //unused
-                    fileBody += '             ';
-                    //Task Name
-                    fileBody += '                              ';
-                    //Pay type
-                    fileBody += 'HR';
-                    // TC rate 10
-                    fileBody += '          ';
-                    //Phase 3
-                    fileBody += '   ';
-                    //unsused 12
-                    fileBody += '            ';
-                    //Equipment Code 25
-                    fileBody += '                         ';
-                    //Implement Code 25
-                    fileBody += '                         ';
-                    //Unused 3
-                    fileBody += '   ';
-                    //CR/LF
-                    fileBody += '\n';
-                }
+            //filtered Cost Center ONLY
+            else if(costCenter !== 'ALL' && employeeId === ''){
+                params = {
+                    TableName : process.env.AWS_DATABASE,
+                    KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
+                    FilterExpression: "#date between :startDate and :endDate AND #costCenter = :costCenter",
+                    ExpressionAttributeNames:{
+                        "#pk": "pk",
+                        "#sk": "sk",
+                        "#date": "date",
+                        "#costCenter": "costCenter"
+                    },
+                    ExpressionAttributeValues: {
+                        ":userPK": user.pk,
+                        ":sk": `TIME#${user.groupId}`,
+                        ":startDate": startDate,
+                        ":endDate": endDate,
+                        ":costCenter": costCenter
+                    }
+                };
             }
-        }
+            //filtered both Cost Center AND Employee
+            else if(costCenter !== 'ALL' && employeeId !== ''){
+                params = {
+                    TableName : process.env.AWS_DATABASE,
+                    KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
+                    FilterExpression: "#date between :startDate and :endDate AND #id = :id AND #costCenter = :costCenter",
+                    ExpressionAttributeNames:{
+                        "#pk": "pk",
+                        "#sk": "sk",
+                        "#date": "date",
+                        "#costCenter": "costCenter",
+                        "#id": "id"
+                    },
+                    ExpressionAttributeValues: {
+                        ":userPK": user.pk,
+                        ":sk": `TIME#${user.groupId}`,
+                        ":startDate": startDate,
+                        ":endDate": endDate,
+                        ":costCenter": costCenter,
+                        ":id": employeeId
+                    }
+                };
+            }
+            //no filter
+            else if(costCenter === 'ALL' && employeeId === ''){
+                params = {
+                    TableName : process.env.AWS_DATABASE,
+                    KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
+                    FilterExpression: "#date between :startDate and :endDate",
+                    ExpressionAttributeNames:{
+                        "#pk": "pk",
+                        "#sk": "sk",
+                        "#date": "date"
+                    },
+                    ExpressionAttributeValues: {
+                        ":userPK": user.pk,
+                        ":sk": `TIME#${user.groupId}`,
+                        ":startDate": startDate,
+                        ":endDate": endDate
+                    }
+                };
+            }
 
-        //update to export = true
-        for(const row of Items){
-            params = {
-                TableName : process.env.AWS_DATABASE,
-                Key:{
-                    "pk": user.pk,
-                    "sk": row.sk
-                },
-                UpdateExpression: "set #exported = :exported",
-                ExpressionAttributeNames:{
-                    "#exported": "exported"
-                },
-                ExpressionAttributeValues: {
-                    ":exported": true 
-                },
-                ReturnValues:"UPDATED_NEW"
-            };
-            await docClient.update(params).promise().catch(error => req.flash('error', error));
-        }
-        let exportFile = `./exports/${startDate}_${endDate+ user.firstName + user.lastName + costCenter}.txt`;
-        
-        fs.writeFile(exportFile, fileBody, (err) => {
-            if (err) throw err;
-            console.log('The file has been saved!');
-            res.download(exportFile);
-            // fs.unlinkSync(exportFile);
+            docClient.query(params, (error, data)=>{
+                if(error){
+                    reject(error);
+                }else{
+                    resolve(data.Items);
+                }
+            });
         });
 
-    } catch (error) {
-        console.log(error);   
     }
+    function createFileBody(Items){
+        let fileBody = '';
+
+        return new Promise( (resolve, reject) => {
+            for(const row of Items){
+                let flag = true;
+                if(row.exported == false || row.exported == 'false'){
+                    if(parseInt(row.pieces1) > 0 && parseFloat(row.rate1) > -1){
+                        flag = false;
+                        console.log('pieces1')
+                        //unused
+                        fileBody += '         ';
+                        //*Employee Id must be 5 characters long
+                        fileBody += row.id + ' ';
+                        //*Timecard date must be formated as MM/DD/YYYY
+                        fileBody += moment(row.date).format('MM/DD/YYYY');
+                        //unused
+                        fileBody += '      ';
+                        //*Cost center code
+                        fileBody += row.costCenter + '              ';
+                        //unused
+                        fileBody += '     ';
+                        //piece Unit Type
+                        fileBody += '                ';
+                        //unused
+                        fileBody += '                                                              ';
+                        //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
+                        hours = parseInt(row.hours) - (parseInt(row.breakTime)/60);
+                        fileBody += (hours).toPrecision(7);
+                        //Piece QTY, 10
+                        if(parseInt(row.pieces1) < 10){
+                            fileBody += parseInt(row.pieces1).toPrecision(9);
+                        }else if(parseInt(row.pieces1) < 100){
+                            fileBody += parseInt(row.pieces1).toPrecision(9);
+                        }else if(parseInt(row.pieces1) >= 100){
+                            fileBody += parseInt(row.pieces1).toPrecision(9);
+                        }
+                        //Piece Rate 8
+                        if(parseFloat(row.rate1) < 1){
+                            fileBody += parseFloat(row.rate1).toPrecision(6);
+                        }else if(parseFloat(row.rate1) < 10){
+                            fileBody += parseFloat(row.rate1).toPrecision(7);
+                        }else if(parseFloat(row.rate1) < 100){
+                            fileBody += parseFloat(row.rate1).toPrecision(7);
+                        }else if(parseFloat(row.rate1) >= 100){
+                            fileBody += parseFloat(row.rate1).toPrecision(7);
+                        }
+                        //unused
+                        fileBody += '             ';
+                        //Task Name
+                        fileBody += '                              ';
+                        //Pay type
+                        fileBody += 'PC';
+                        // TC rate 10
+                        fileBody += '          ';
+                        //Phase 3
+                        fileBody += '   ';
+                        //unsused 12
+                        fileBody += '            ';
+                        //Equipment Code 25
+                        fileBody += '                         ';
+                        //Implement Code 25
+                        fileBody += '                         ';
+                        //Unused 3
+                        fileBody += '   ';
+                        //CR/LF
+                        fileBody += '\n';
+                    }
+                    if(parseInt(row.pieces2) > 0 && parseFloat(row.rate2) > -1){
+                        flag=false;
+                        console.log("peices2")
+                        //unused
+                        fileBody += '         ';
+                        //*Employee Id must be 5 characters long
+                        fileBody += row.id + ' ';
+                        //*Timecard date must be formated as MM/DD/YYYY
+                        fileBody += moment(row.date).format('MM/DD/YYYY');
+                        //unused
+                        fileBody += '      ';
+                        //*Cost center code
+                        fileBody += row.costCenter + '              ';
+                        //unused
+                        fileBody += '     ';
+                        //piece Unit Type
+                        fileBody += '                ';
+                        //unused
+                        fileBody += '                                                              ';
+                        //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
+                        hours = parseFloat(row.hours) - (parseFloat(row.breakTime)/60);
+                        fileBody += (hours).toPrecision(7);
+                        //Piece QTY, 10
+                        //Piece QTY, 10
+                        if(parseInt(row.pieces2) < 10){
+                            fileBody += parseInt(row.pieces2).toPrecision(9);
+                        }else if(parseInt(row.pieces2) < 100){
+                            fileBody += parseInt(row.pieces2).toPrecision(9);
+                        }else if(parseInt(row.pieces2) >= 100){
+                            fileBody += parseInt(row.pieces2).toPrecision(9);
+                        }
+                        //Piece Rate 8
+                        if(parseFloat(row.rate2) < 1){
+                            fileBody += parseFloat(row.rate2).toPrecision(6);
+                        }else if(parseFloat(row.rate2) < 10){
+                            fileBody += parseFloat(row.rate2).toPrecision(7);
+                        }else if(parseFloat(row.rate2) < 100){
+                            fileBody += parseFloat(row.rate2).toPrecision(7);
+                        }else if(parseFloat(row.rate2) >= 100){
+                            fileBody += parseFloat(row.rate2).toPrecision(7);
+                        }
+                        //unused
+                        fileBody += '             ';
+                        //Task Name
+                        fileBody += '                              ';
+                        //Pay type
+                        fileBody += 'PC';
+                        // TC rate 10
+                        fileBody += '          ';
+                        //Phase 3
+                        fileBody += '   ';
+                        //unsused 12
+                        fileBody += '            ';
+                        //Equipment Code 25
+                        fileBody += '                         ';
+                        //Implement Code 25
+                        fileBody += '                         ';
+                        //Unused 3
+                        fileBody += '   ';
+                        //CR/LF
+                        fileBody += '\n';
+                    }
+                    if(parseInt(row.pieces3) > 0 && parseFloat(row.rate3) > -1){
+                        flag=false;
+                        //unused
+                        fileBody += '         ';
+                        //*Employee Id must be 5 characters long
+                        fileBody += row.id + ' ';
+                        //*Timecard date must be formated as MM/DD/YYYY
+                        fileBody += moment(row.date).format('MM/DD/YYYY');
+                        //unused
+                        fileBody += '      ';
+                        //*Cost center code
+                        fileBody += row.costCenter + '              ';
+                        //unused
+                        fileBody += '     ';
+                        //piece Unit Type
+                        fileBody += '                ';
+                        //unused
+                        fileBody += '                                                              ';
+                        //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
+                        hours = parseFloat(row.hours) - (parseFloat(row.breakTime)/60);
+                        fileBody += (hours).toPrecision(7);
+                        //Piece QTY, 10
+                        if(parseInt(row.pieces3) < 10){
+                            fileBody += parseInt(row.pieces3).toPrecision(9);
+                        }else if(parseInt(row.pieces3) < 100){
+                            fileBody += parseInt(row.pieces3).toPrecision(9);
+                        }else if(parseInt(row.pieces3) >= 100){
+                            fileBody += parseInt(row.pieces3).toPrecision(9);
+                        }
+                        //Piece Rate 8
+                        if(parseFloat(row.rate3) < 1){
+                            fileBody += parseFloat(row.rate3).toPrecision(6);
+                        }else if(parseFloat(row.rate3) < 10){
+                            fileBody += parseFloat(row.rate3).toPrecision(7);
+                        }else if(parseFloat(row.rate3) < 100){
+                            fileBody += parseFloat(row.rate3).toPrecision(7);
+                        }else if(parseFloat(row.rate3) >= 100){
+                            fileBody += parseFloat(row.rate3).toPrecision(7);
+                        }
+                        //unused
+                        fileBody += '             ';
+                        //Task Name
+                        fileBody += '                              ';
+                        //Pay type
+                        fileBody += 'PC';
+                        // TC rate 10
+                        fileBody += '          ';
+                        //Phase 3
+                        fileBody += '   ';
+                        //unsused 12
+                        fileBody += '            ';
+                        //Equipment Code 25
+                        fileBody += '                         ';
+                        //Implement Code 25
+                        fileBody += '                         ';
+                        //Unused 3
+                        fileBody += '   ';
+                        //CR/LF
+                        fileBody += '\n';
+                    }
+                    if(flag){
+                        //unused
+                        fileBody += '         ';
+                        //*Employee Id must be 5 characters long
+                        fileBody += row.id + ' ';
+                        //*Timecard date must be formated as MM/DD/YYYY
+                        fileBody += moment(row.date).format('MM/DD/YYYY');
+                        //unused
+                        fileBody += '      ';
+                        //*Cost center code
+                        fileBody += row.costCenter + '              ';
+                        //unused
+                        fileBody += '     ';
+                        //piece Unit Type
+                        fileBody += '                ';
+                        //unused
+                        fileBody += '                                                              ';
+                        //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
+                        fileBody += parseInt(row.hours).toPrecision(7);
+                        //Piece QTY, 10
+                        fileBody += '          ';
+                        //Piece Rate
+                        fileBody += '        ';
+                        //unused
+                        fileBody += '             ';
+                        //Task Name
+                        fileBody += '                              ';
+                        //Pay type
+                        fileBody += 'HR';
+                        // TC rate 10
+                        fileBody += '          ';
+                        //Phase 3
+                        fileBody += '   ';
+                        //unsused 12
+                        fileBody += '            ';
+                        //Equipment Code 25
+                        fileBody += '                         ';
+                        //Implement Code 25
+                        fileBody += '                         ';
+                        //Unused 3
+                        fileBody += '   ';
+                        //CR/LF
+                        fileBody += '\n';
+                    }
+                }
+            }
+
+            resolve(fileBody);
+        });
+    }
+    function updateExportedRows(data, user){
+        return new Promise( (resolve, reject) => {
+            for(const row of data){
+                let params = {
+                    TableName : process.env.AWS_DATABASE,
+                    Key:{
+                        "pk": user.pk,
+                        "sk": row.sk
+                    },
+                    UpdateExpression: "set #exported = :exported",
+                    ExpressionAttributeNames:{
+                        "#exported": "exported"
+                    },
+                    ExpressionAttributeValues: {
+                        ":exported": true 
+                    },
+                    ReturnValues:"UPDATED_NEW"
+                };
+
+                docClient.update(params, (error, data)=>{
+                    if(error){
+                        reject(error)
+                    }else{
+                        resolve(true);
+                    }
+                });
+            }
+        });
+    }
+    async function main(){
+        
+        try {
+            const user = req.user;
+            const {startDate, endDate, costCenter, employeeId} = req.body
+
+            let data = await fetchData(employeeId, costCenter, startDate, endDate, user);
+            let fileBody = await createFileBody(data);
+            let updated = await updateExportedRows(data, user);
+
+            if(updated){
+                let exportFile = `./exports/${startDate}_${endDate+ user.firstName + user.lastName + costCenter}.txt`;
+                
+                fs.writeFile(exportFile, fileBody, (err) => {
+                    if (err) throw err;
+                    console.log('The file has been saved!');
+                    res.download(exportFile);
+                    // fs.unlinkSync(exportFile);
+                });
+            }
+        } catch (error) {
+            console.log(error);   
+        }
+    }
+
+    main();
 }
