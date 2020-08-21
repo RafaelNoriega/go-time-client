@@ -24,6 +24,8 @@ $(document).ready(function($)
 				tbl +='<th scope="col">Employee Number</th>';
 				tbl +='<th scope="col">Employee Name</th>';
                 tbl +='<th scope="col">Hours</th>';
+				// tbl +='<th scope="col">Flat Rate</th>';
+				tbl +='<th scope="col">Piece Pay Only</th>';
                 tbl +='<th scope="col">Break (min)</th>';
                 tbl +='<th scope="col">Pieces 1</th>';
                 tbl +='<th scope="col">Rate 1</th>';  
@@ -53,39 +55,34 @@ $(document).ready(function($)
 					//you can replace with your database row id
 					var row_id = val['sk'];
 					//loop through ajax row data
-					tbl +='<tr row_id="'+row_id+'">';
-                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="date">'+val['date']+'</div></td>';
-						<% if(user.role === "admin"){%>
-                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeNumber">'+val['id']+'</div></td>';
-                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
-						<%}%>
-						<% if(user.role === "user"){%>
-							tbl +='<td scope="row" ><div class="row_data" edit_type="button" col_name="employeeNumber">'+val['id']+'</div></td>';
-                        	tbl +='<td scope="row" ><div class="row_data" edit_type="button" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
-						<%}%>
-						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="hours">'+parseInt(val['hours'])+'</div></td>';
-						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="break">'+val['breakTime']+'</div></td>';
-						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces1">'+val['pieces1']+'</div></td>';
-						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate1">'+val['rate1']+'</div></td>';
-						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces2">'+val['pieces2']+'</div></td>';
-                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate2">'+val['rate2']+'</div></td>';
-                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces3">'+val['pieces3']+'</div></td>';
-						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate3">'+val['rate3']+'</div></td>';
-                        tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
-						tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="costCenter">'+val['costCenter']+'</div></td>';
-						<% if(user.role === "admin"){%>
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';
-						<%}%>
-						//--->edit options > start
-						// tbl +='<td>';						 
-						// 	tbl +='<span class="btn_edit" > <a href="#" class="btn btn-primary " row_id="'+row_id+'" > <i class="fas fa-pencil-alt" style="font-size: 15px;"></i></a> </span>';
-						// 	//only show this button if edit button is clicked
-						// 	tbl +='<a href="#" class="btn_save btn btn-primary"  row_id="'+row_id+'"> Save </a>';
-						// 	tbl +='<a href="#" class="btn_cancel btn btn-primary" row_id="'+row_id+'"> Cancel </a>';
-						// 	tbl +='<a href="#" class="btn_delete btn btn-primary" row_id="'+row_id+'"> Delete</a>';
-						// tbl +='</td>';
-						//--->edit options > end						
-					tbl +='</tr>';
+					if(val['position'] === 'worker'){
+						tbl +='<tr row_id="'+row_id+'">';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="date">'+val['date']+'</div></td>';
+							<% if(user.role === "admin"){%>
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeNumber">'+val['id']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
+							<%}%>
+							<% if(user.role === "user"){%>
+								tbl +='<td scope="row" ><div class="row_data" edit_type="button" col_name="employeeNumber">'+val['id']+'</div></td>';
+								tbl +='<td scope="row" ><div class="row_data" edit_type="button" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
+							<%}%>
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="hours">'+parseFloat(val['hours'])+'</div></td>';
+							// tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="flatRate">'+parseFloat(val['flatRate'])+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieceOnly">'+val['pieceOnly']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="break">'+val['breakTime']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces1">'+val['pieces1']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate1">'+val['rate1']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces2">'+val['pieces2']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate2">'+val['rate2']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces3">'+val['pieces3']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate3">'+val['rate3']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="costCenter">'+val['costCenter']+'</div></td>';
+							<% if(user.role === "admin"){%>
+								tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';
+							<%}%>				
+						tbl +='</tr>';
+					}
 				});
 				//--->create table body rows > end
 			tbl +='</tbody>';
@@ -93,8 +90,10 @@ $(document).ready(function($)
             tbl += '<tfoot>';
             tbl += '<td scope="row">';
             tbl += '<td scope="row" class="font-weight-bold">Total</td>';
-            tbl += `<td scope="row" class="font-weight-bold">${tbl_data.length}</td>`;
+            tbl += `<td scope="row" class="font-weight-bold">${tbl_data.filter(entry => entry.position == 'worker').length}</td>`;
             tbl += '<td scope="row" id="hoursTotals" class="font-weight-bold"></td>';
+			tbl += '<td scope="row"></td>';
+            tbl += '<td scope="row"></td>';
             tbl += '<td scope="row" id="breakTotals" class="font-weight-bold"></td>';
             tbl += '<td scope="row" id="pieces1Totals" class="font-weight-bold"></td>';
             tbl += '<td scope="row"></td>';
@@ -209,7 +208,8 @@ $(document).ready(function($)
         arr['row_id'] = row_id;
 
         var startDate = $('')
-		if(original_entry != col_val)
+
+		if(col_val != original_entry && col_val != '' && col_val != ' ')
 		{ 
 			//remove the attr so that new entry can take place
 			$(this).removeAttr('original_entry');
@@ -224,7 +224,9 @@ $(document).ready(function($)
 			};
 			
             //****** call db api to update the database record
-           let response =  await $.post('records/data', data_obj);
+            let response =  await $.post('records/data', data_obj);
+
+
 			let startDate = $(document).find('#startDate').val();
 			let endDate = $(document).find('#endDate').val();
 			let costCenter = $(document).find('#costCenter').val();
@@ -234,17 +236,17 @@ $(document).ready(function($)
 		}
 		else
 		{
-			$('.post_msg').html('');
+			$(this).html(original_entry);
 		}
 		
 	})	
 	
 	$(document).on('click', '.btn_export_file', event => {
-		console.log("click");
         let startDate = $(document).find('#startDate').val();
         let endDate = $(document).find('#endDate').val();
 		let costCenter = $(document).find('#costCenter').val();
 		let employeeId = $(document).find('#employeeId').val();
+		
 		let body = {
 			startDate,
 			endDate,

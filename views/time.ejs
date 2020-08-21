@@ -18,11 +18,11 @@
                     </div>
                      <div class="form-group col-md-6 col-sm-12" id="hours-input-1">
                         <label for="hours">Hours</label>
-                        <input class="form-control" type="number" name="hours" value="8">
+                        <input class="form-control" type="number" name="hours" value="8" step="any">
                     </div>
                     <div class="form-group col-md-6 col-sm-12" id="break-input">
                         <label for="hours">Break</label>
-                        <input class="form-control" type="number" name="breakTime" value="20">
+                        <input class="form-control" type="number" name="breakTime" value="20" step="any">
                         <small>Value should be presented in minutes</small>
                     </div>
                     <div class="form-group col-12" id="cost-center">
@@ -36,9 +36,9 @@
                     <div class="form-group" id="employee-input">
                         <label for="employee">Employees</label>
                         <div class="form-group">
-                            <label>Select All</label>
+                            <label>Toggle Select All</label>
                             <input type="checkbox" id="checkAll" name="checkAll"/>
-                            <small id="checked-count"></small>
+                            <p class="d-flex" id="checked-count">Selected: 0</p>
                         </div>
                         <% for(let employee of employees) {%>
                             <div class="form-check">
@@ -70,7 +70,15 @@ $('#checkAll').click(function(event) {
             this.checked = false;                       
         });
     }
-})
+});
+
+$(document).ready( function(){
+    $('input[type="checkbox"]').change(function(){
+        let count = $('input[type="checkbox"]:checked').not('#checkAll').length;
+        $('#checked-count').html(`Selected: ${count}`);
+    });
+
+});
 </script>
 </body>
 
