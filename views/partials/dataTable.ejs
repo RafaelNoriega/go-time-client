@@ -58,18 +58,14 @@ $(document).ready(function($)
 					if(val['position'] === 'worker'){
 						tbl +='<tr row_id="'+row_id+'">';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="date">'+val['date']+'</div></td>';
-							<% if(user.role === "admin"){%>
+							
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeNumber">'+val['id']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
-							<%}%>
-							<% if(user.role === "user"){%>
-								tbl +='<td scope="row" ><div class="row_data" edit_type="button" col_name="employeeNumber">'+val['id']+'</div></td>';
-								tbl +='<td scope="row" ><div class="row_data" edit_type="button" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
-							<%}%>
+							
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="hours">'+parseFloat(val['hours'])+'</div></td>';
 							// tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="flatRate">'+parseFloat(val['flatRate'])+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieceOnly">'+val['pieceOnly']+'</div></td>';
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="break">'+val['breakTime']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="breakTime">'+val['breakTime']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces1">'+val['pieces1']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate1">'+val['rate1']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces2">'+val['pieces2']+'</div></td>';
@@ -93,7 +89,6 @@ $(document).ready(function($)
             tbl += `<td scope="row" class="font-weight-bold">${tbl_data.filter(entry => entry.position == 'worker').length}</td>`;
             tbl += '<td scope="row" id="hoursTotals" class="font-weight-bold"></td>';
 			tbl += '<td scope="row"></td>';
-            tbl += '<td scope="row"></td>';
             tbl += '<td scope="row" id="breakTotals" class="font-weight-bold"></td>';
             tbl += '<td scope="row" id="pieces1Totals" class="font-weight-bold"></td>';
             tbl += '<td scope="row"></td>';

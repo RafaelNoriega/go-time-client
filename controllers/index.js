@@ -74,9 +74,9 @@ exports.getTime = async (req, res, next) => {
                 ":activeValue": true
             }
         };
-        //get all employees under this foreman
+        
         const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
-
+        
         params = {
             TableName : process.env.AWS_DATABASE,
             KeyConditionExpression: `#pk = :userPK AND #sk = :sk`,
@@ -89,6 +89,7 @@ exports.getTime = async (req, res, next) => {
                 ":sk": 'METADATA'
             }
         }
+
         let costCenters = await docClient.query(params).promise().catch(error => console.log(error));
         costCenters = costCenters.Items[0].costCenters; 
         
