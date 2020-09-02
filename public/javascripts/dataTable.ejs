@@ -1,4 +1,4 @@
-<script type="text/javascript">
+
 $(document).ready(function($)
 { 	 
     //search with date filters
@@ -35,9 +35,8 @@ $(document).ready(function($)
                 tbl +='<th scope="col">Rate 3</th>';                
                 tbl +='<th scope="col">Table</th>';
 				tbl +='<th scope="col">Grower</th>';
-				<% if(user.role === "admin"){%>
-					tbl +='<th scope="col">Exported</th>';
-				<%}%>
+				tbl +='<th scope="col">Exported</th>';
+
                 // tbl +='<th>Edit</th>';
 				tbl +='</tr>';
 			tbl +='</thead>';
@@ -74,9 +73,7 @@ $(document).ready(function($)
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate3">'+val['rate3']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="costCenter">'+val['costCenter']+'</div></td>';
-							<% if(user.role === "admin"){%>
-								tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';
-							<%}%>				
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';			
 						tbl +='</tr>';
 					}
 				});
@@ -98,9 +95,8 @@ $(document).ready(function($)
             tbl += '<td scope="row"></td>';
             tbl += '<td scope="row"></td>';
 			tbl += '<td scope="row"></td>';
-			<% if(user.role === "admin"){%>
-				tbl += '<td scope="row"></td>';
-			<%}%>
+			tbl += '<td scope="row"></td>';
+
 		tbl += '</tfoot>';
 		tbl +='</table>';
 		//--->create data table > end
@@ -546,4 +542,3 @@ $(document).ready(function($)
 	// });
 	
 });
-</script>

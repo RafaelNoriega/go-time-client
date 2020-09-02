@@ -205,8 +205,23 @@ exports.timeRecords = async (req, res, next) => {
         let startDate = moment().format('YYYY-MM-DD');
         let endDate = moment().format('YYYY-MM-DD');
         //let endDate   = moment().day(7).format('YYYY-MM-DD');
+        params = {
+            TableName : process.env.AWS_DATABASE,
+            KeyConditionExpression: `#pk = :userPK AND #sk = :sk`,
+            ExpressionAttributeNames:{
+                "#pk": "pk",
+                "#sk": "sk",
+            },
+            ExpressionAttributeValues: {
+                ":userPK": user.pk,
+                ":sk": 'METADATA'
+            }
+        }
 
-        res.render('records', {user, startDate, endDate})
+        let costCenters = await docClient.query(params).promise().catch(error => console.log(error));
+        costCenters = costCenters.Items[0].costCenters; 
+
+        res.render('records', {user, startDate, endDate, costCenters})
    
     } catch (error) {
         console.log(error);
@@ -443,7 +458,7 @@ exports.timeRecordsDataExport = async (req, res, next) => {
         let breaksAggregate = new Map();
 
         return new Promise( (resolve, reject) => {
-            console.log(Items.length)
+
             for(const row of Items){
                 const {breakTime, costCenter, date, exported, flatRate, hours, id, pieceOnly, pieces1, pieces2, pieces3, rate1, rate2, rate3} = row;
                 let hourlyOnly = false;

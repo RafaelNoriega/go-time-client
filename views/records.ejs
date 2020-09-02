@@ -20,10 +20,9 @@
                     <div class="form-group col-sm-12 col-md-6">
                         <label for="costCenter">Grower</label>
                         <select class="form-control" name="costCenter" id="costCenter">
-                            <option value="ALL" selected>All</option>
-                            <option value="20JDHR">JAKOV DULCICH</option>
-                            <option value="20LFHR">LUCICH FARMS</option>
-                            <option value="20MHHR">MARTIN HEIN RANCH</option>
+                            <% for(let center of costCenters){%>
+                                <option value=<%= center.code%>><%= center.name%></option>
+                            <%}%>
                         </select>
     
                     </div>
@@ -37,9 +36,7 @@
             </form>
         </div>
         <div class="col-12 col-md-12 search-table-col">
-            <% if(user.role === "admin"){%>
-                <span class="btn btn-primary btn_export_file pr-2">Export</span>
-            <%}%>
+            <span class="btn btn-primary btn_export_file pr-2">Export</span>
             <div class="form-group pull-right col-lg-4">
                 <input type="text" class="search form-control" placeholder="Search by typing here..">
             </div>
@@ -72,9 +69,9 @@
 </form>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
-<script src="javascripts/Table-With-Search.js"></script>
-<!-- <script src="javascripts/data-table.ejs"></script> -->
-<% include ./partials/dataTable.ejs %> 
+<script src="./javascripts/Table-With-Search.js"></script>
+<script src="./javascripts/dataTable.ejs"></script>
+
 </body>
 
 </html>
