@@ -15,7 +15,29 @@ const AWS_CONFIG = {
 
 AWS.config.update(AWS_CONFIG);
 const docClient = new dynamodb.DocumentClient();
+exports.getEmployees = async (req, res, next)=>{
+    const {user} = req;
 
+    let params = {
+        TableName : process.env.AWS_DATABASE,
+        KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
+        FilterExpression: "#active = :activeValue",
+        ExpressionAttributeNames:{
+            "#pk": "pk",
+            "#sk": "sk",
+            "#active": "active"
+        },
+        ExpressionAttributeValues: {
+            ":userPK": user.pk,
+            ":sk": 'EMP#',
+            ":activeValue": true
+        }
+    };
+    
+    const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
+    let employees = Items.sort((a, b) => (a.lastName > b.lastName) ? 1 : -1)
+    res.send(employees);
+}
 exports.newEmployee = (req, res, next) => {
     async  function Main() {
         try {
@@ -27,7 +49,7 @@ exports.newEmployee = (req, res, next) => {
                     req.flash('error', 'Please enter a value for the employee Id');
                     return res.redirect('/new-employee');
                 }else{
-                    console.log('Employee Id: ',employeeId)
+                    
                     params = {
                         TableName: process.env.AWS_DATABASE,
                         Item: { 
@@ -53,6 +75,44 @@ exports.newEmployee = (req, res, next) => {
             }
     }
     Main();
+}
+exports.updateEmployee = async (req, res, next)=>{
+    const {user} = req;
+    const {row_id, col_name, col_val} = req.body;
+    console.log('Column Name: ',col_name)
+
+    if(col_name == 'delete'){
+        let params = {
+            TableName:process.env.AWS_DATABASE,
+            Key:{
+                "pk": user.pk,
+                "sk": row_id
+            }
+        }
+
+        await docClient.delete(params).promise().catch(error => console.log(error));
+        return res.sendStatus(200)
+    }else{
+        let params = {
+            TableName:process.env.AWS_DATABASE,
+            Key:{
+                "pk": user.pk,
+                "sk": row_id
+            },
+            UpdateExpression: "set #column = :value",
+            ExpressionAttributeNames: {
+                "#column": col_name
+            },
+            ExpressionAttributeValues:{
+                ":value": col_val
+            },
+            ReturnValues:"UPDATED_NEW"
+        }
+        console.log("Updating the item...");
+        await docClient.update(params).promise().catch(error => console.log(error));
+        return res.sendStatus(200);       
+    }
+
 }
 
 exports.getTime = async (req, res, next) => {
@@ -93,8 +153,8 @@ exports.getTime = async (req, res, next) => {
         let costCenters = await docClient.query(params).promise().catch(error => console.log(error));
         costCenters = costCenters.Items[0].costCenters; 
         
-        Items.sort((a, b) => (a.lastName > b.lastName) ? 1 : -1)
-        res.render('time', {user, employees:Items, day, costCenters, message: req.flash('message'), error: req.flash('error')});
+        let employees = Items.sort((a, b) => (a.lastName > b.lastName) ? 1 : -1)
+        res.render('time', {user, employees, day, costCenters, message: req.flash('message'), error: req.flash('error')});
     } catch (error) {
         
     }
@@ -331,27 +391,40 @@ exports.timeRecordsData = async (req, res, next) => {
 
 exports.timeRecordsDataUpdate = async (req, res, next) => {
     let user = req.user;
-    const {row_id, col_name, col_val, call_type} = req.body;
+    const {row_id, col_name, col_val} = req.body;
 
-    let params = {
-        TableName:process.env.AWS_DATABASE,
-        Key:{
-            "pk": user.pk,
-            "sk": row_id
-        },
-        UpdateExpression: "set #column = :value",
-        ExpressionAttributeNames: {
-            "#column": col_name
-        },
-        ExpressionAttributeValues:{
-            ":value": col_val
-        },
-        ReturnValues:"UPDATED_NEW"
-    };
-    
-    console.log("Updating the item...");
-    await docClient.update(params).promise().catch(error => console.log(error));
-    return res.sendStatus(200)
+    if(col_name == 'delete'){
+        let params = {
+            TableName:process.env.AWS_DATABASE,
+            Key:{
+                "pk": user.pk,
+                "sk": row_id
+            }
+        }
+
+        await docClient.delete(params).promise().catch(error => console.log(error));
+        return res.sendStatus(200)
+    }else{
+        let params = {
+            TableName:process.env.AWS_DATABASE,
+            Key:{
+                "pk": user.pk,
+                "sk": row_id
+            },
+            UpdateExpression: "set #column = :value",
+            ExpressionAttributeNames: {
+                "#column": col_name
+            },
+            ExpressionAttributeValues:{
+                ":value": col_val
+            },
+            ReturnValues:"UPDATED_NEW"
+        };
+        
+        console.log("Updating the item...");
+        await docClient.update(params).promise().catch(error => console.log(error));
+        return res.sendStatus(200)
+    }
 }
 
 exports.timeRecordsDataExport = async (req, res, next) => {

@@ -36,6 +36,7 @@ $(document).ready(function($)
                 tbl +='<th scope="col">Table</th>';
 				tbl +='<th scope="col">Grower</th>';
 				tbl +='<th scope="col">Exported</th>';
+				tbl +='<th></th>'
 
                 // tbl +='<th>Edit</th>';
 				tbl +='</tr>';
@@ -73,7 +74,8 @@ $(document).ready(function($)
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate3">'+val['rate3']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="costCenter">'+val['costCenter']+'</div></td>';
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';			
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';	
+							tbl += '<td><div class="row_data" edit_type="click" col_name="delete"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';		
 						tbl +='</tr>';
 					}
 				});
@@ -111,23 +113,23 @@ $(document).ready(function($)
         // $(document).find('#employee-data').bootstrapTable({data:data});
       
          let totalHours = tbl_data.reduce(function(a, b){
-             return a + parseInt(b.hours);
+             return a + parseFloat(b.hours);
          }, 0);
 
          let totalBreak = tbl_data.reduce(function(a, b){
-            return a + parseInt(b.breakTime);
+            return a + parseFloat(b.breakTime);
         }, 0);
 
         let totalPieces1 = tbl_data.reduce(function(a, b){
-            return a + parseInt(b.pieces1);
+            return a + parseFloat(b.pieces1);
         }, 0);
 
         let totalPieces2 = tbl_data.reduce(function(a, b){
-            return a + parseInt(b.pieces2);
+            return a + parseFloat(b.pieces2);
         }, 0);
 
         let totalPieces3 = tbl_data.reduce(function(a, b){
-            return a + parseInt(b.pieces3);
+            return a + parseFloat(b.pieces3);
         }, 0);
 
         $(document).find('#hoursTotals').html(totalHours); 

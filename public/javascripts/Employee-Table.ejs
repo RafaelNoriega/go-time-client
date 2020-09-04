@@ -1,0 +1,114 @@
+$(document).ready(function ($){
+	//--->make div editable > start
+	
+	function createTable(employeeData){
+		let tbl = '';
+		tbl +='<table id="employee-data" class="table table-striped text-center pb-5">'
+		tbl +='<thead class="bill-header cs">';
+		tbl +='<tr>';
+		tbl +='<th>Employee Id</th>';
+		tbl +='<th>Last Name</th>';
+		tbl +='<th>First Name</th>';
+		tbl +='<th>Middle Name</th>';
+
+		tbl +='<th></th>';
+		tbl +='</tr>';
+		tbl +='</thead>';
+		tbl +='<tbody>';
+		
+		for(let employee of employeeData){
+
+			tbl += '<tr row_id="'+employee.sk+'">';
+			tbl += '<td><div class="row_data" edit_type="click" col_name="employeeId">'+employee.employeeId+'</div></td>';
+			tbl += '<td><div class="row_data" edit_type="click" col_name="lastName">'+employee.lastName+'</td>';
+			tbl += '<td><div class="row_data" edit_type="click" col_name="firstName">'+employee.firstName+'</td>';
+			tbl += '<td><div class="row_data" edit_type="click" col_name="middleName">'+employee.middleName+'</td>';
+			
+			tbl += '<td><div class="row_data" edit_type="click" col_name="delete"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>'
+			tbl += '</tr>';
+		}
+
+        tbl +='</tbody>';
+		tbl +='</table>';
+		
+		$(document).find('.tbl-employee-data').html(tbl);
+	}
+
+	$.get(`get-employees`, data => createTable(data));
+
+	$(document).on('click', '.row_data', function(event) 
+	{
+		event.preventDefault(); 
+
+		if($(this).attr('edit_type') == 'button')
+		{
+			return false; 
+		}
+
+		//make div editable
+		$(this).closest('div').attr('contenteditable', 'true');
+		$(this).closest('div').attr('inputmode', 'decimal');
+		//add bg css
+		$(this).addClass('border border-success');
+
+		$(this).focus();
+
+		$(this).attr('original_entry', $(this).html());
+
+    });
+    
+
+    $(document).on('focusout', '.row_data', async function(event) 
+	{
+		console.log('Focus Out')
+		event.preventDefault();
+
+		if($(this).attr('edit_type') == 'button')
+		{
+			return false; 
+		}
+
+		//get the original entry
+		let original_entry = $(this).attr('original_entry');
+
+		let row_id = $(this).closest('tr').attr('row_id'); 
+		let row_div = $(this)				
+		row_div.removeClass('border border-success') //add bg css
+		.css('padding','')
+
+        let col_name = row_div.attr('col_name'); 
+		let col_val = row_div.html(); 
+
+		let arr = {};
+		//get the col name and value
+        arr[col_name] = col_val; 
+		//get row id value
+        arr['row_id'] = row_id;
+
+
+		if(col_val != original_entry && col_val != '' && col_val != ' ')
+		{ 
+			//remove the attr so that new entry can take place
+			$(this).removeAttr('original_entry');
+
+			//ajax api json data			 
+			let data_obj = 
+			{
+				row_id,
+				col_name,
+				col_val				
+			};
+			console.log(data_obj)
+            //****** call db api to update the database record
+			let response =  await $.post('get-employees/update', data_obj);
+			
+			console.log(response);
+			$.get(`get-employees`, data => createTable(data));
+		}
+		else
+		{
+			$(this).html(original_entry);
+		}
+		
+	})	
+});
