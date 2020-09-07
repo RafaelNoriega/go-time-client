@@ -57,10 +57,10 @@ $(document).ready(function($)
 					//loop through ajax row data
 					if(val['position'] === 'worker'){
 						tbl +='<tr row_id="'+row_id+'">';
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="date">'+val['date']+'</div></td>';
+							tbl +='<td scope="row" ><div>'+val['date']+'</div></td>';
 							
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeNumber">'+val['id']+'</div></td>';
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="employeeName">'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
+							tbl +='<td scope="row" ><div>'+val['id']+'</div></td>';
+							tbl +='<td scope="row" ><div>'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
 							
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="hours">'+parseFloat(val['hours'])+'</div></td>';
 							// tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="flatRate">'+parseFloat(val['flatRate'])+'</div></td>';
@@ -75,7 +75,7 @@ $(document).ready(function($)
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="costCenter">'+val['costCenter']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';	
-							tbl += '<td><div class="row_data" edit_type="click" col_name="delete"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';		
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="delete"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';		
 						tbl +='</tr>';
 					}
 				});
@@ -163,6 +163,13 @@ $(document).ready(function($)
 
 		//make div editable
 		$(this).closest('div').attr('contenteditable', 'true');
+
+		let columnName = $(this).attr('col_name');
+
+		let digitColumns = ['hours', 'employeeNumber', 'breakTime', 'pieces1' , 'rate1' , 'pieces2' , 'rate2' , 'pieces3' , 'rate3', 'table'];
+		if(digitColumns.includes(columnName)){
+			$(this).closest('div').attr('inputmode', 'decimal');
+		}
 		//add bg css
 		$(this).addClass('border border-success').css('padding','1px');
 

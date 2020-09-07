@@ -21,7 +21,7 @@ exports.getEmployees = async (req, res, next)=>{
     let params = {
         TableName : process.env.AWS_DATABASE,
         KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
-        FilterExpression: "#active = :activeValue",
+        FilterExpression: "#active = :activeValue OR #active = :activeValueString",
         ExpressionAttributeNames:{
             "#pk": "pk",
             "#sk": "sk",
@@ -30,7 +30,8 @@ exports.getEmployees = async (req, res, next)=>{
         ExpressionAttributeValues: {
             ":userPK": user.pk,
             ":sk": 'EMP#',
-            ":activeValue": true
+            ":activeValue": true,
+            ":activeValueString": 'true'
         }
     };
     
@@ -122,7 +123,7 @@ exports.getTime = async (req, res, next) => {
         let params = {
             TableName : process.env.AWS_DATABASE,
             KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
-            FilterExpression: "#active = :activeValue",
+            FilterExpression: "#active = :activeValue OR #active = :activeValueString",
             ExpressionAttributeNames:{
                 "#pk": "pk",
                 "#sk": "sk",
@@ -131,7 +132,8 @@ exports.getTime = async (req, res, next) => {
             ExpressionAttributeValues: {
                 ":userPK": user.pk,
                 ":sk": 'EMP#',
-                ":activeValue": true
+                ":activeValue": true,
+                ":activeValueString": 'true'
             }
         };
         
@@ -162,7 +164,7 @@ exports.getTime = async (req, res, next) => {
 
 exports.newTime = async (req, res, next) => {
     try {
-        const {employees, date, hours, breakTime, costCenter} = req.body
+        const {employees, date, hours, breakTime, costCenter, rate1, rate2, rate3} = req.body
         let employeesList = employees;
         typeof date == 'string'? safeDate = date: safeDate=date[0];
         const {user} = req;
@@ -207,11 +209,11 @@ exports.newTime = async (req, res, next) => {
                             flatRate: 0,
                             breakTime: 0,
                             pieces1: 0,
-                            rate1: 0,
+                            rate1,
                             pieces2: 0,
-                            rate2: 0,
+                            rate2,
                             pieces3: 0,
-                            rate3: 0,
+                            rate3,
                             table: 0,
                             costCenter,
                             exported: false,
@@ -234,11 +236,11 @@ exports.newTime = async (req, res, next) => {
                             flatRate: 0,
                             breakTime,
                             pieces1: 0,
-                            rate1: 0,
+                            rate1,
                             pieces2: 0,
-                            rate2: 0,
+                            rate2,
                             pieces3: 0,
-                            rate3: 0,
+                            rate3,
                             table: 0,
                             costCenter,
                             exported: false,
@@ -548,7 +550,7 @@ exports.timeRecordsDataExport = async (req, res, next) => {
                         //*Employee Id must be 5 characters long
                         fileBody += id + ' ';
                         //*Timecard date must be formated as MM/DD/YYYY
-                        fileBody += moment(date).format('MM/DD/YYYY');
+                        fileBody += moment(date).format('MM-DD-YYYY');
                         //unused
                         fileBody += '      ';
                         //*Cost center code
@@ -730,248 +732,316 @@ exports.timeRecordsDataExport = async (req, res, next) => {
                         if(pieceOnly == 'true' || pieceOnly == true ){
                             //if user already exist then we just need to update the date and the totals for the hours and piece compensation.
                             if(breaksAggregate.has(id)){
-                                let pieceCompensation = parseInt(pieces1) * parseFloat(rate1);
-                                pieceCompensation    += parseInt(pieces2) * parseFloat(rate2);
-                                pieceCompensation    += parseInt(pieces3) * parseFloat(rate3);
-    
+
                                 let obj = breaksAggregate.get(id);
-                                obj.date = moment(date).format('MM/DD/YYYY');
+                                
+                                if(moment(date).format('MM/DD/YYYY') > obj.date){
+                                    obj.date = moment(date).format('MM/DD/YYYY');
+                                }
                                 obj.hours += parseFloat(hours);
-                                obj.pieceCompensation += pieceCompensation;
                                 obj.breakTime += parseFloat(breakTime);
-                                obj.pieces1 = parseInt(obj.pieces1) + parseInt(pieces1);
-                                obj.pieces2 = parseInt(obj.pieces2) + parseInt(pieces2);
-                                obj.pieces3 = parseInt(obj.pieces3) + parseInt(pieces3);
+                                
+                                let set1Found = false;
+                                for(let [index, set] of obj.set1.entries()){
+                                    if(parseFloat(set.rate1) == parseFloat(rate1)){
+                                        set1Found = true;
+                                        obj.set1[index].pieces1=  parseInt(obj.set1[index].pieces1) + parseInt(pieces1);   
+                                    }
+                                }
+
+                                if(!set1Found){
+                                    obj.set1.push({pieces1, rate1});
+                                }
+
+                                let set2Found = false;
+                                for(let [index, set] of obj.set2.entries()){
+                                    if(parseFloat(set.rate2) == parseFloat(rate2)){
+                                        set2Found = true;
+                                        obj.set1[index].pieces2 = parseInt(obj.set2[index].pieces2) + parseInt(pieces2);   
+                                    }
+                                }
+
+                                if(!set2Found){
+                                    obj.set2.push({pieces2, rate2});
+                                }
+
+                                let set3Found = false;
+                                for(let [index, set] of obj.set3.entries()){
+                                    if(parseFloat(set.rate3) == parseFloat(rate3)){
+                                        set3Found = true;
+                                        obj.set3[index].pieces3=  parseInt(obj.set3[index].pieces3) + parseInt(pieces3);   
+                                    }
+                                }
+
+                                if(!set3Found){
+                                    obj.set3.push({pieces3, rate3});
+                                }
 
                                 breaksAggregate.set(id, obj);
+
                             }else{
-                                let pieceCompensation = parseInt(pieces1) * parseFloat(rate1);
-                                pieceCompensation    += parseInt(pieces2) * parseFloat(rate2);
-                                pieceCompensation    += parseInt(pieces3) * parseFloat(rate3);
-    
                                 let obj = {
                                     state: 0,
                                     date: moment(date).format('MM/DD/YYYY'),
                                     hours: parseFloat(hours),
-                                    pieceCompensation,
                                     breakTime: parseFloat(breakTime),
                                     costCenter: costCenter,
-                                    pieces1,
-                                    pieces2,
-                                    pieces3,
-                                    rate1,
-                                    rate2,
-                                    rate3
+                                    set1 : [{pieces1, rate1}],
+                                    set2 : [{pieces2, rate2}],
+                                    set3 : [{pieces3, rate3}]
                                 }
                                 breaksAggregate.set(id, obj);
                             }
                         }else if(pieceOnly == 'false' || pieceOnly == false){
                             if(breaksAggregate.has(id)){
-                                let pieceCompensation = parseInt(pieces1) * parseFloat(rate1);
-                                pieceCompensation    += parseInt(pieces2) * parseFloat(rate2);
-                                pieceCompensation    += parseInt(pieces3) * parseFloat(rate3);
     
                                 let obj = breaksAggregate.get(id);
+                                console.log(obj)
                                 if(obj.state === 0){
                                     obj.state = 1;
                                 }
-                                obj.date = moment(date).format('MM/DD/YYYY');
+                                if(moment(date).format('MM/DD/YYYY') > obj.date){
+                                    obj.date = moment(date).format('MM/DD/YYYY');
+                                }
                                 obj.hours += parseFloat(hours);
-                                obj.pieceCompensation += pieceCompensation;
                                 obj.breakTime += parseFloat(breakTime);
-                                obj.pieces1 = parseInt(obj.pieces1) + parseInt(pieces1);
-                                obj.pieces2 = parseInt(obj.pieces2) + parseInt(pieces2);
-                                obj.pieces3 = parseInt(obj.pieces3) + parseInt(pieces3);
-  
+
+                               let set1Found = false;
+                                for(let [index, set] of obj.set1.entries()){
+                                    if(parseFloat(set.rate1) == parseFloat(rate1)){
+                                        set1Found = true;
+                                        obj.set1[index].pieces1 = parseInt(obj.set1[index].pieces1) + parseInt(pieces1);   
+                                    }
+                                }
+
+                                if(!set1Found){
+                                    obj.set1.push({pieces1, rate1});
+                                }
+
+                                let set2Found = false;
+                                for(let [index, set] of obj.set2.entries()){
+                                    if(parseFloat(set.rate2) == parseFloat(rate2)){
+                                        set2Found = true;
+                                        obj.set2[index].pieces2 = parseInt(obj.set2[index].pieces2) + parseInt(pieces2);   
+                                    }
+                                }
+
+                                if(!set2Found){
+                                    obj.set2.push({pieces2, rate2});
+                                }
+
+                                let set3Found = false;
+                                for(let [index, set] of obj.set3.entries()){
+                                    if(parseFloat(set.rate3) == parseFloat(rate3)){
+                                        set3Found = true;
+                                        obj.set3[index].pieces3 = parseInt(obj.set3[index].pieces3) + parseInt(pieces3);   
+                                    }
+                                }
+
+                                if(!set3Found){
+                                    obj.set3.push({pieces3, rate3});
+                                }
+
                                 breaksAggregate.set(id, obj);
                             }else{
-                                let pieceCompensation = parseInt(pieces1) * parseFloat(rate1);
-                                pieceCompensation    += parseInt(pieces2) * parseFloat(rate2);
-                                pieceCompensation    += parseInt(pieces3) * parseFloat(rate3);
-    
                                 let obj = {
                                     state: 1,
                                     date: moment(date).format('MM/DD/YYYY'),
                                     hours: parseFloat(hours),
-                                    pieceCompensation,
                                     breakTime: parseFloat(breakTime),
                                     costCenter: costCenter,
-                                    pieces1,
-                                    pieces2,
-                                    pieces3,
-                                    rate1,
-                                    rate2,
-                                    rate3
+                                    set1 : [{pieces1, rate1}],
+                                    set2 : [{pieces2, rate2}],
+                                    set3 : [{pieces3, rate3}]
                                 }
-    
                                 breaksAggregate.set(id, obj);
                             }
                         }
                     }
                 }
             }
+
             //Add aggregated break compensations
             for(const [key, value] of breaksAggregate){
-                const {hours, breakTime, date, costCenter, state, pieceCompensation, pieces1, rate1, pieces2, rate2, pieces3, rate3} = value;
+                const {hours, breakTime, date, costCenter, state, set1, set2, set3} = value;
                 let rate = 0;
                 let breakTimeInMinutes = (breakTime / 60.00);
                 let workHours = hours - breakTimeInMinutes;
 
+                let pieceCompensation = 0;
+                for(let set of set1){
+                    pieceCompensation += parseInt(set.pieces1) * parseFloat(set.rate1);
+                }
+
+                for(let set of set2){
+                    pieceCompensation += parseInt(set.pieces2) * parseFloat(set.rate2);
+                }
+
+                for(let set of set3){
+                    pieceCompensation += parseInt(set.pieces3) * parseFloat(set.rate3);
+                }
                 //state 0 = piece Only 1 = piece and hourly
                 if(state === 0){
-                    rate = pieceCompensation/ workHours;
+                    rate = parseFloat(pieceCompensation / workHours);
 
                 }else if(state === 1){
-                    let totalCompensation = pieceCompensation + ( workHours * env.MINIMUM_WAGE)
-                    rate = totalCompensation / workHours
-                }               
+                    let totalCompensation = parseFloat(pieceCompensation + ( workHours * env.MINIMUM_WAGE) );
+                    rate = parseFloat(totalCompensation / workHours);
+                }    
+                
 
                 //Pieces Pay Only
-                if(parseInt(pieces1) > 0 && parseFloat(rate1) > -1 ){
-                    //===================================Pieces 1 Export Section=======================================
-                    //unused
-                    fileBody += '         ';
-                    //*Employee Id must be 5 characters long
-                    fileBody += key + ' ';
-                    //*Timecard date must be formated as MM/DD/YYYY
-                    fileBody += moment(date).format('MM/DD/YYYY');
-                    //unused
-                    fileBody += '      ';
-                    //*Cost center code
-                    fileBody += costCenter + '              ';
-                    //unused
-                    fileBody += '     ';
-                    //piece Unit Type
-                    fileBody += '                ';
-                    //unused
-                    fileBody += '                                                              ';
-                    //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
-                    fileBody += parseFloat(hours - (breakTime/60)).toPrecision(7);
-                    //Piece QTY, 10
-                    fileBody += parseInt(pieces1).toPrecision(9);
-                    //Piece Rate 8
-                    if(parseFloat(rate1) < 1){
-                        fileBody += parseFloat(rate1).toPrecision(6);
-                    }else {
-                        fileBody += parseFloat(rate1).toPrecision(7);
+                for(let set of set1){
+                    if(parseInt(set.pieces1) > 0 && parseFloat(set.rate1) > -1 ){
+                        //===================================Pieces 1 Export Section=======================================
+                        //unused
+                        fileBody += '         ';
+                        //*Employee Id must be 5 characters long
+                        fileBody += key + ' ';
+                        //*Timecard date must be formated as MM/DD/YYYY
+                        fileBody += moment(date).format('MM/DD/YYYY');
+                        //unused
+                        fileBody += '      ';
+                        //*Cost center code
+                        fileBody += costCenter + '              ';
+                        //unused
+                        fileBody += '     ';
+                        //piece Unit Type
+                        fileBody += '                ';
+                        //unused
+                        fileBody += '                                                              ';
+                        //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
+                        fileBody += '        ';
+                        //Piece QTY, 10
+                        fileBody += parseInt(set.pieces1).toPrecision(9);
+                        //Piece Rate 8
+                        if(parseFloat(set.rate1) < 1){
+                            fileBody += parseFloat(set.rate1).toPrecision(6);
+                        }else {
+                            fileBody += parseFloat(set.rate1).toPrecision(7);
+                        }
+                        //unused
+                        fileBody += '             ';
+                        //Task Name
+                        fileBody += '                              ';
+                        //Pay type
+                        fileBody += 'PC';
+                        // TC rate 10
+                        fileBody += '          ';
+                        //Phase 3
+                        fileBody += '   ';
+                        //unsused 12
+                        fileBody += '            ';
+                        //Equipment Code 25
+                        fileBody += '                         ';
+                        //Implement Code 25
+                        fileBody += '                         ';
+                        //Unused 3
+                        fileBody += '   ';
+                        //CR/LF
+                        fileBody += '\n';
+                        //===================================Pieces 1 Export Section End=======================================
                     }
-                    //unused
-                    fileBody += '             ';
-                    //Task Name
-                    fileBody += '                              ';
-                    //Pay type
-                    fileBody += 'PC';
-                    // TC rate 10
-                    fileBody += '          ';
-                    //Phase 3
-                    fileBody += '   ';
-                    //unsused 12
-                    fileBody += '            ';
-                    //Equipment Code 25
-                    fileBody += '                         ';
-                    //Implement Code 25
-                    fileBody += '                         ';
-                    //Unused 3
-                    fileBody += '   ';
-                    //CR/LF
-                    fileBody += '\n';
-                    //===================================Pieces 1 Export Section End=======================================
                 }
-                if(parseInt(pieces2) > 0 && parseFloat(rate2) > -1 ){
-                    //unused
-                    fileBody += '         ';
-                    //*Employee Id must be 5 characters long
-                    fileBody += key + ' ';
-                    //*Timecard date must be formated as MM/DD/YYYY
-                    fileBody += moment(date).format('MM/DD/YYYY');
-                    //unused
-                    fileBody += '      ';
-                    //*Cost center code
-                    fileBody += costCenter + '              ';
-                    //unused
-                    fileBody += '     ';
-                    //piece Unit Type
-                    fileBody += '                ';
-                    //unused
-                    fileBody += '                                                              ';
-                    //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
-                    fileBody += parseFloat(hours - (breakTime/60)).toPrecision(7);
-                    //Piece QTY, 10
-                    fileBody += parseInt(pieces2).toPrecision(9);
-                    //Piece Rate 8
-                    if(parseFloat(rate2) < 1){
-                        fileBody += parseFloat(rate2).toPrecision(6);
-                    }else{
-                        fileBody += parseFloat(rate2).toPrecision(7);
+                for(let set of set2){
+                    if(parseInt(set.pieces2) > 0 && parseFloat(set.rate2) > -1 ){
+                        //unused
+                        fileBody += '         ';
+                        //*Employee Id must be 5 characters long
+                        fileBody += key + ' ';
+                        //*Timecard date must be formated as MM/DD/YYYY
+                        fileBody += moment(date).format('MM/DD/YYYY');
+                        //unused
+                        fileBody += '      ';
+                        //*Cost center code
+                        fileBody += costCenter + '              ';
+                        //unused
+                        fileBody += '     ';
+                        //piece Unit Type
+                        fileBody += '                ';
+                        //unused
+                        fileBody += '                                                              ';
+                        //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
+                        fileBody += '        ';
+                        //Piece QTY, 10
+                        fileBody += parseInt(set.pieces2).toPrecision(9);
+                        //Piece Rate 8
+                        if(parseFloat(set.rate2) < 1){
+                            fileBody += parseFloat(set.rate2).toPrecision(6);
+                        }else{
+                            fileBody += parseFloat(set.rate2).toPrecision(7);
+                        }
+                        //unused
+                        fileBody += '             ';
+                        //Task Name
+                        fileBody += '                              ';
+                        //Pay type
+                        fileBody += 'PC';
+                        // TC rate 10
+                        fileBody += '          ';
+                        //Phase 3
+                        fileBody += '   ';
+                        //unsused 12
+                        fileBody += '            ';
+                        //Equipment Code 25
+                        fileBody += '                         ';
+                        //Implement Code 25
+                        fileBody += '                         ';
+                        //Unused 3
+                        fileBody += '   ';
+                        //CR/LF
+                        fileBody += '\n';
                     }
-                    //unused
-                    fileBody += '             ';
-                    //Task Name
-                    fileBody += '                              ';
-                    //Pay type
-                    fileBody += 'PC';
-                    // TC rate 10
-                    fileBody += '          ';
-                    //Phase 3
-                    fileBody += '   ';
-                    //unsused 12
-                    fileBody += '            ';
-                    //Equipment Code 25
-                    fileBody += '                         ';
-                    //Implement Code 25
-                    fileBody += '                         ';
-                    //Unused 3
-                    fileBody += '   ';
-                    //CR/LF
-                    fileBody += '\n';
                 }
-                if(parseInt(pieces3) > 0 && parseFloat(rate3) > -1 ){
-                    //unused
-                    fileBody += '         ';
-                    //*Employee Id must be 5 characters long
-                    fileBody += key + ' ';
-                    //*Timecard date must be formated as MM/DD/YYYY
-                    fileBody += moment(date).format('MM/DD/YYYY');
-                    //unused
-                    fileBody += '      ';
-                    //*Cost center code
-                    fileBody += costCenter + '              ';
-                    //unused
-                    fileBody += '     ';
-                    //piece Unit Type
-                    fileBody += '                ';
-                    //unused
-                    fileBody += '                                                              ';
-                    //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
-                    fileBody += parseFloat(hours - (breakTime/60)).toPrecision(7);
-                    //Piece QTY, 10
-                    fileBody += parseInt(pieces3).toPrecision(9);
-                    //Piece Rate 8
-                    if(parseFloat(rate3) < 1){
-                        fileBody += parseFloat(rate3).toPrecision(6);
-                    }else {
-                        fileBody += parseFloat(rate3).toPrecision(7);
+                for(let set of set3){
+                    if(parseInt(set.pieces3) > 0 && parseFloat(set.rate3) > -1 ){
+                        //unused
+                        fileBody += '         ';
+                        //*Employee Id must be 5 characters long
+                        fileBody += key + ' ';
+                        //*Timecard date must be formated as MM/DD/YYYY
+                        fileBody += moment(date).format('MM/DD/YYYY');
+                        //unused
+                        fileBody += '      ';
+                        //*Cost center code
+                        fileBody += costCenter + '              ';
+                        //unused
+                        fileBody += '     ';
+                        //piece Unit Type
+                        fileBody += '                ';
+                        //unused
+                        fileBody += '                                                              ';
+                        //Hours Worked 8 spaces (. counts as a space so set precision to 7 + '.' = 8) --------------------------------------
+                        fileBody += '        ';
+                        //Piece QTY, 10
+                        fileBody += parseInt(set.pieces3).toPrecision(9);
+                        //Piece Rate 8
+                        if(parseFloat(set.rate3) < 1){
+                            fileBody += parseFloat(set.rate3).toPrecision(6);
+                        }else {
+                            fileBody += parseFloat(set.rate3).toPrecision(7);
+                        }
+                        //unused
+                        fileBody += '             ';
+                        //Task Name
+                        fileBody += '                              ';
+                        //Pay type
+                        fileBody += 'PC';
+                        // TC rate 10
+                        fileBody += '          ';
+                        //Phase 3
+                        fileBody += '   ';
+                        //unsused 12
+                        fileBody += '            ';
+                        //Equipment Code 25
+                        fileBody += '                         ';
+                        //Implement Code 25
+                        fileBody += '                         ';
+                        //Unused 3
+                        fileBody += '   ';
+                        //CR/LF
+                        fileBody += '\n';
                     }
-                    //unused
-                    fileBody += '             ';
-                    //Task Name
-                    fileBody += '                              ';
-                    //Pay type
-                    fileBody += 'PC';
-                    // TC rate 10
-                    fileBody += '          ';
-                    //Phase 3
-                    fileBody += '   ';
-                    //unsused 12
-                    fileBody += '            ';
-                    //Equipment Code 25
-                    fileBody += '                         ';
-                    //Implement Code 25
-                    fileBody += '                         ';
-                    //Unused 3
-                    fileBody += '   ';
-                    //CR/LF
-                    fileBody += '\n';
                 }
 
                 //unused

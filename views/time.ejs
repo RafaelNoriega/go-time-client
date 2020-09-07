@@ -25,6 +25,33 @@
                         <input class="form-control" type="number" name="breakTime" value="20" step="any">
                         <small>Value should be presented in minutes</small>
                     </div>
+                    <div class="form-group col-md-6 col-sm-12" id="break-input">
+                        <label for="hours">Rate 1</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">$</div>
+                              </div>
+                            <input class="form-control" type="number" value="0.0" name="rate1" step="any">
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 col-sm-12" id="break-input">
+                        <label for="hours">Rate 2</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">$</div>
+                              </div>
+                            <input class="form-control" type="number" value="0.0" name="rate2" step="any">
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6 col-sm-12" id="break-input">
+                        <label for="hours">Rate 3</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">$</div>
+                              </div>
+                            <input class="form-control" type="number" value="0.0" name="rate3" step="any">
+                        </div>
+                    </div>
                     <div class="form-group col-12" id="cost-center">
                         <label for="cost-center">Grower</label>
                         <select class="form-control" id="cost-center" name="costCenter">
@@ -36,14 +63,17 @@
                     <div class="form-group" id="employee-input">
                         <label for="employee">Employees</label>
                         <div class="form-group">
-                            <label>Toggle Select All</label>
-                            <input type="checkbox" id="checkAll" name="checkAll"/>
-                            <p class="d-flex" id="checked-count">Selected: 0</p>
+                            <div class="form-check">
+                                <input class="form-check-input form-control-lg" type="checkbox" id="checkAll" name="checkAll"/>
+                                <label class="form-control-lg">Select All</label>
+                                <p class="d-flex" id="checked-count">Selected: 0</p>
+                                <hr>
+                            </div>
                         </div>
                         <% for(let employee of employees) {%>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="employees" value=<%= employee.sk %> id="employees">
-                                <label class="form-check-label" for="formCheck-1"><%= `${employee.lastName}, ${employee.firstName} ${employee.middleName} ${employee.employeeId}`%></label>
+                                <input class="form-check-input form-control-lg" type="checkbox" name="employees" value=<%= employee.sk %> id="employees">
+                                <label class="form-check-label form-control-lg" for="formCheck-1"><%= `${employee.lastName}, ${employee.firstName} ${employee.middleName} ${employee.employeeId}`%></label>
                             </div>
                         <%}%>
                     </div>
