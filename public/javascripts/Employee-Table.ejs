@@ -21,7 +21,7 @@ $(document).ready(function ($){
 		tbl +='<th>First Name</th>';
 		tbl +='<th>Middle Name</th>';
 		tbl +='<th>Active</th>';
-		tbl +='<th><i class="fas fa-lock"></i></th>';
+		tbl +='<th>Delete</th>';
 		tbl +='</tr>';
 		tbl +='</thead>';
 		tbl +='<tbody>';
@@ -30,11 +30,12 @@ $(document).ready(function ($){
 
 			tbl += '<tr row_id="'+employee.sk+'">';
 			tbl += '<td><div class="row_data" edit_type="click" col_name="employeeId">'+employee.employeeId+'</div></td>';
-			tbl += '<td><div class="row_data" edit_type="click" col_name="lastName">'+employee.lastName+'</td>';
-			tbl += '<td><div class="row_data" edit_type="click" col_name="firstName">'+employee.firstName+'</td>';
-			tbl += '<td><div class="row_data" edit_type="click" col_name="middleName">'+employee.middleName+'</td>';
-			tbl += '<td><div class="row_data" edit_type="click" col_name="active">'+employee.active+'</td>';
-			tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="delete"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';
+			tbl += '<td><div id="lastName" class="row_data" edit_type="click" col_name="lastName">'+employee.lastName+'</div></td>';
+			tbl += '<td><div id="firstName" class="row_data" edit_type="click" col_name="firstName">'+employee.firstName+'</div></td>';
+			tbl += '<td><div class="row_data" edit_type="click" col_name="middleName">'+employee.middleName+'</div></td>';
+			tbl += '<td><div class="row_data" edit_type="click" col_name="active">'+employee.active+'</div></td>';
+			// tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="delete"><button class="btn btn-danger" data-toggle="modal" data-target="#deleteUserModal"><i class= "fas fa-trash text-light"></i></button></div></td>';
+			tbl +='<td><div id="deleteUser"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';
 			tbl += '</tr>';
 		}
 
@@ -43,6 +44,39 @@ $(document).ready(function ($){
 		
 		$(document).find('.tbl-employee-data').html(tbl);
 	}
+
+	$(document).on('click', '#deleteUser', function(event) {
+		event.preventDefault();
+		const row_id = $(this).closest('tr').attr('row_id'); 
+
+		$('#deleteUserModal').modal('show');
+
+		$('#deleteUserModal').one('hide.bs.modal', async function (event) {
+			var activeElement = $(document.activeElement);
+			
+
+			if (activeElement.is('[data-dismiss]')) {
+				if (event.type === 'hide') {
+					// Do something with the button that closed the modal
+					if(activeElement[0]['id'] == 'cancel'){
+						$('#deleteUserModal').modal('hide');
+					}else if(activeElement[0]['id'] == 'confirm'){
+
+						let data_obj = 
+						{
+							row_id,
+							col_name: 'delete',
+							col_val: ''			
+						};
+						//****** call db api to update the database record
+						let response =  await $.post('get-employees/update', data_obj);
+						
+						$.get(`get-employees`, data => createTable(data));
+					}
+				}
+			}
+		});
+	});
 
 	$.get(`get-employees`, data => createTable(data));
 
@@ -73,7 +107,6 @@ $(document).ready(function ($){
 
     $(document).on('focusout', '.row_data', async function(event) 
 	{
-		console.log('Focus Out')
 		event.preventDefault();
 
 		if($(this).attr('edit_type') == 'button')
@@ -97,7 +130,6 @@ $(document).ready(function ($){
         arr[col_name] = col_val; 
 		//get row id value
         arr['row_id'] = row_id;
-
 
 		if(col_val != original_entry && col_val != '' && col_val != ' ')
 		{ 

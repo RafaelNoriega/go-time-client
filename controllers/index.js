@@ -37,7 +37,7 @@ exports.getEmployees = async (req, res, next)=>{
     
     const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
     let employees = Items.sort((a, b) => (a.lastName > b.lastName) ? 1 : -1)
-    res.send(employees);
+    res.send(employees.filter(e => e.position == 'worker'));
 }
 exports.newEmployee = (req, res, next) => {
     async  function Main() {
@@ -111,6 +111,35 @@ exports.updateEmployee = async (req, res, next)=>{
         }
         console.log("Updating the item...");
         await docClient.update(params).promise().catch(error => console.log(error));
+
+        if(col_name == 'employeeId'){
+            console.log(row_id.substring(4))
+            let params = {
+                TableName:process.env.AWS_DATABASE,
+                KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
+                ExpressionAttributeNames:{
+                    "#pk": "pk",
+                    "#sk": "sk",
+                },
+                ExpressionAttributeValues: {
+                    ":userPK": user.pk,
+                    ":sk": `TIME#EMP#${row_id.substring(4)}`,
+                }
+            }
+            let {Items} = await docClient.query(params).promise().catch(error => console.log("error: ", error));
+            console.log("Items: ", Items.length);
+            for(let row of Items){
+
+                row.id = col_val;
+                console.log(row);
+                let params = { 
+                    TableName:process.env.AWS_DATABASE,
+                    Item: row
+                }
+
+                await docClient.put(params).promise().catch(error => console.log(error));
+            }
+        }
         return res.sendStatus(200);       
     }
 
@@ -156,7 +185,8 @@ exports.getTime = async (req, res, next) => {
         costCenters = costCenters.Items[0].costCenters; 
         
         let employees = Items.sort((a, b) => (a.lastName > b.lastName) ? 1 : -1)
-        res.render('time', {user, employees, day, costCenters, message: req.flash('message'), error: req.flash('error')});
+
+        res.render('time', {user, employees: employees.filter(e => e.position == 'worker'), day, costCenters, message: req.flash('message'), error: req.flash('error')});
     } catch (error) {
         
     }
@@ -199,7 +229,7 @@ exports.newTime = async (req, res, next) => {
                         TableName: process.env.AWS_DATABASE,
                         Item: {
                             pk: user.pk,
-                            sk: `TIME#${user.groupId}#DATE#${date}#EMP#${e.substring(4)}`,
+                            sk: `TIME#EMP#${e.substring(4)}#DATE#${date}`,
                             date: moment(date).format('YYYY-MM-DD'),
                             id: Items[0].employeeId,
                             firstName: Items[0].firstName,
@@ -226,7 +256,7 @@ exports.newTime = async (req, res, next) => {
                         TableName: process.env.AWS_DATABASE,
                         Item: {
                             pk: user.pk,
-                            sk: `TIME#${user.groupId}#DATE#${date}#EMP#${e.substring(4)}`,
+                            sk: `TIME#EMP#${e.substring(4)}#DATE#${date}`,
                             date: moment(date).format('YYYY-MM-DD'),
                             id: Items[0].employeeId,
                             firstName: Items[0].firstName,
@@ -310,7 +340,7 @@ exports.timeRecordsData = async (req, res, next) => {
                 },
                 ExpressionAttributeValues: {
                     ":userPK": user.pk,
-                    ":sk": `TIME#${user.groupId}`,
+                    ":sk": `TIME`,
                     ":startDate": startDate,
                     ":endDate": endDate
                 }
@@ -330,7 +360,7 @@ exports.timeRecordsData = async (req, res, next) => {
                 },
                 ExpressionAttributeValues: {
                     ":userPK": user.pk,
-                    ":sk": `TIME#${user.groupId}`,
+                    ":sk": `TIME`,
                     ":startDate": startDate,
                     ":endDate": endDate,
                     ":id": employeeId
@@ -351,7 +381,7 @@ exports.timeRecordsData = async (req, res, next) => {
                 },
                 ExpressionAttributeValues: {
                     ":userPK": user.pk,
-                    ":sk": `TIME#${user.groupId}`,
+                    ":sk": `TIME`,
                     ":startDate": startDate,
                     ":endDate": endDate,
                     ":costCenter": costCenter
@@ -374,7 +404,7 @@ exports.timeRecordsData = async (req, res, next) => {
                 },
                 ExpressionAttributeValues: {
                     ":userPK": user.pk,
-                    ":sk": `TIME#${user.groupId}`,
+                    ":sk": `TIME`,
                     ":startDate": startDate,
                     ":endDate": endDate,
                     ":costCenter": costCenter,
@@ -384,7 +414,8 @@ exports.timeRecordsData = async (req, res, next) => {
         }
 
         const {Items} = await docClient.query(params).promise().catch(error => req.flash('error', error));
-        res.send(Items);
+        let TimeRecords = Items.sort((a, b) => (a.date > b.date  || a.lastName > b.lastName) ? 1 : -1)
+        res.send(TimeRecords);
 
     } catch (error) {
         console.log(error);

@@ -11,7 +11,44 @@ $(document).ready(function($)
 		let employeeId = $(document).find('#employeeId').val();
 
         $.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
-    });
+	});
+	
+	$(document).on('click', '#deleteUser', function(event) {
+		event.preventDefault();
+		const row_id = $(this).closest('tr').attr('row_id'); 
+
+		$('#deleteUserModal').modal('show');
+
+		$('#deleteUserModal').one('hide.bs.modal', async function (event) {
+			var activeElement = $(document.activeElement);
+			
+
+			if (activeElement.is('[data-dismiss]')) {
+				if (event.type === 'hide') {
+					// Do something with the button that closed the modal
+					if(activeElement[0]['id'] == 'cancel'){
+						$('#deleteUserModal').modal('hide');
+					}else if(activeElement[0]['id'] == 'confirm'){
+
+						let data_obj = 
+						{
+							row_id,
+							col_name: 'delete',
+							col_val: ''			
+						};
+						//****** call db api to update the database record
+						let response =  await $.post('get-employees/update', data_obj);
+						
+						let startDate = $(document).find('#startDate').val();
+						let endDate = $(document).find('#endDate').val();
+						let costCenter = $(document).find('#costCenter').val();
+						let employeeId = $(document).find('#employeeId').val();
+						$.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
+					}
+				}
+			}
+		});
+	});
 
 	function create_html_table (tbl_data)
 	{
@@ -75,7 +112,7 @@ $(document).ready(function($)
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="costCenter">'+val['costCenter']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';	
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="delete"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';		
+							tbl +='<td><div id="deleteUser"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';
 						tbl +='</tr>';
 					}
 				});
