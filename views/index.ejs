@@ -1,14 +1,9 @@
 <% include ./partials/_header.ejs%>
-    <nav class="navbar navbar-light navbar-expand-md">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Go Time</a>
-        </div>
-    </nav>
     <div class=" col-sm-12 col-md-10 offset-md-1 col-lg-6 offset-lg-3 col-xl-4 offset-4 login-clean">
         <form method="POST" action="/users/login">
             <h2 class="sr-only">Login Form</h2>
-            <div class="illustration"><i class="icon ion-android-time"></i>
-                <h1>Go Time</h1>
+            <div class="illustration">
+                <img class="img-fluid mb-4" src="images/Pivot-Logo-Full.png" alt="">
             </div>
             <% if(error) { %>
                 <p style="color:red;font-size: small;text-align: center;"> <strong> <%= error %> </strong></p>

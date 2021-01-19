@@ -50,6 +50,29 @@ $(document).ready(function($)
 		});
 	});
 
+	$(document).on('click', '#resetExport', async function (event) {
+		event.preventDefault();
+		console.log('clicked reset');
+		let startDate = $(document).find('#startDate').val();
+        let endDate = $(document).find('#endDate').val();
+		let costCenter = $(document).find('#costCenter').val();
+		let employeeId = $(document).find('#employeeId').val();
+
+		let data_obj = 
+			{
+				startDate,
+				endDate, 
+				costCenter,
+				employeeId			
+			};
+			
+		//****** call db api to update the database record
+		let response =  await $.post('records/data/reset', data_obj);
+		$(document).find('.tbl_user_data').html('	<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+		console.log(response);
+		setTimeout(() => $.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data)) , 2000);
+	});
+
 	function create_html_table (tbl_data)
 	{
 		var tbl = '';
@@ -184,7 +207,8 @@ $(document).ready(function($)
         let endDate = $(document).find('#endDate').val();
 		let costCenter = $(document).find('#costCenter').val();
 		let employeeId = $(document).find('#employeeId').val();
-        $.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
+
+		$.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
     
 	//--->create table via ajax call > end
 
@@ -283,22 +307,32 @@ $(document).ready(function($)
         let endDate = $(document).find('#endDate').val();
 		let costCenter = $(document).find('#costCenter').val();
 		let employeeId = $(document).find('#employeeId').val();
-		
-		let body = {
-			startDate,
-			endDate,
-			costCenter,
-			employeeId
-		};
         
 		$(document).find('#startDateInput').val(startDate);
 		$(document).find('#endDateInput').val(endDate);
 		$(document).find('#costCenterInput').val(costCenter);
 		$(document).find('#employeeIdInput').val(employeeId);
 		$(document).find('#exportForm').submit();
+		
 		$.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
 
-	})
+	});
+
+	$(document).on('click', '.btn_export_summary', event => {
+		console.log('summary export');
+		let startDate = $(document).find('#startDate').val();
+        let endDate = $(document).find('#endDate').val();
+		let costCenter = $(document).find('#costCenter').val();
+		let employeeId = $(document).find('#employeeId').val();
+
+		$(document).find('#startDateInputSummary').val(startDate);
+		$(document).find('#endDateInputSummary').val(endDate);
+		$(document).find('#costCenterInputSummary').val(costCenter);
+		$(document).find('#employeeIdInputSummary').val(employeeId);
+		$(document).find('#exportSummary').submit();
+
+		$.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
+	});
 	//--->save single field data > end
 
 	//--->button > edit > start	

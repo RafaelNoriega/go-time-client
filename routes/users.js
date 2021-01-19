@@ -3,6 +3,7 @@ const router = express.Router();
 const AWS = require('aws-sdk');
 const dynamodb = require('aws-sdk/clients/dynamodb');
 const passport = require('passport');
+const {userCheck, userCheckAdmin} = require('../middleware/loggedin');
 
 //default region is different than where the DynamoDb tables are.
 const AWS_CONFIG = { 
@@ -14,6 +15,32 @@ const AWS_CONFIG = {
 AWS.config.update(AWS_CONFIG);
 const docClient = new dynamodb.DocumentClient();
 
+router.get('/checkUsername', userCheckAdmin, async (req, res, next) => {
+  
+  const {username} = req.query;
+
+  let params = {
+    TableName :  process.env.AWS_DATABASE,
+    IndexName: "username-index",
+    KeyConditionExpression: "#user = :user",
+    ExpressionAttributeNames:{
+        "#user": "username"
+    },
+    ExpressionAttributeValues: {
+        ":user": username
+    }
+  };
+
+  const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
+
+  if(Items.length == 0){
+      res.status(200).send('No user found');
+  }else{
+    res.status(200).send('User Found');
+  }
+
+});
+
 /* GET users listing. */
 router.post('/login', passport.authenticate('user', 
   { 
@@ -22,6 +49,10 @@ router.post('/login', passport.authenticate('user',
   }),
 (req, res, next) => {
 
+  if(req.user.pk.includes("ACC") ){
+    console.log("Admin User");
+    res.redirect('/admin');
+  }
   res.redirect('/time')
 });
 

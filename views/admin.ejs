@@ -1,0 +1,46 @@
+<% include ./partials/_header.ejs%>
+<% include ./partials/_navbar-admin.ejs%>
+    <div class="container-md">
+    <div class="row">
+        <div class="col" style="padding-bottom: 40px;">
+            <h1 class="text-center text-primary pt-5 pb-5">Admin Portal</h1>
+            <div class="row text-center">
+            <%if(user.orgList.length > 0){%>
+                <%for(let account of user.orgList){%>
+                    <div class="col-lg-4 col-md-4">
+                        <div class="border mt-2 mb-2">
+                            <div class="card">
+                                <div class="card-body">
+                                    <i class="fas fa-address-card fa-3x"></i>
+                                    <h5 class="card-title pt-2"><%=account.name%></p>
+                                </div>
+                                <h5>Growers</h5>
+                                <ul class="list-group list-group-flush">
+                                    <%for(let grower of account.growers){%>
+                                        <li class="list-group-item"><%=grower.growerName%></li>   
+                                    <%}%>
+                                </ul>
+                                <div class="card-body">
+                                    <a href=<%= `/admin/set/${account.org.replace('#', "_")}` %> class="card-link">View Account</a>
+                                    <br><br>
+                                    <a href=<%= `/admin/deleteCrew/${account.org.replace('#', "_")}`%> class="card-link card-delete invisible delete-crew">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <%}%>
+            <%}%>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+<script src="javascripts/Table-With-Search.js"></script>
+<script src="javascripts/checked-count.js"></script>
+<script src="javascripts/adminNavbar.js"></script>
+
+</body>
+
+</html>

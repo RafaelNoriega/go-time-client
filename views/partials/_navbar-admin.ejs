@@ -1,0 +1,112 @@
+<nav class="navbar navbar-light navbar-expand-md pb-5">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><img src="images/Pivot-Logo.png" alt="" height="30"></a>
+         <button data-toggle="collapse" class="navbar-toggler ml-auto" data-target="#navcol-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse"
+            id="navcol-1">
+            <ul class="nav navbar-nav mr-auto">
+               
+            </ul>
+            <ul class="nav navbar-nav">
+                <li class="nav-item dropdown">
+
+                </li> 
+            </ul>
+            <button type="button" class="btn btn-secondary ml-2" data-toggle="modal" data-target="#multipageModal"><i class="fas fa-user-plus"></i> New Crew</button>
+            <button type="button" class="btn btn-secondary ml-2" data-toggle="modal" data-target="#deletecrewmodal"><i class="fas fa-trash"></i> Delete Crews</button>
+            <a class="btn btn-secondary ml-2" href="/users/logout"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+       
+    </div>
+</nav>
+
+<!-- Modal delete crew -->
+<div class="modal fade" id="deletecrewmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Delete Crew</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to enable crew deletion?</p>
+          <p class="text-danger">Deleting a crew will PERMANENTLY delete its foreman, workers and timecards.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary"   data-dismiss="modal" id="enableDelete">Accept</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+<!-- Multi Page Modal -->
+<div class="modal fade" id="multipageModal"  tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">New Crew</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="newCrewForm" method="POST" action="/admin/newCrew">
+                    <div class="modal-split">
+                        <div class="form-group">
+                            <label for="orgName">*Crew Name</label>
+                            <input type="text" class="form-control" name="crewName" id="orgName" aria-describedby="crewname" placeholder="" required>
+                            <small id="emailHelp" class="form-text text-muted">Once you create a new crew you will not be able to delete it for one billing period.</small>
+                        </div>
+                        <%for(let grower of user.growers){%>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" name="growers" value=<%= `${grower.growerName.replace(/ /g, "_")},${grower.growerId}` %>>
+                                <label class="form-check-label" for="grower"><%=grower.growerName%></label>
+                            </div>
+                        <%}%>
+                        <small id="emailHelp" class="form-text text-muted">* required</small>
+                    </div>
+                    <div class="modal-split">
+                        <div class="form-group">
+                            <label for="orgName">*Foreman Username</label>
+                            <input type="text" class="form-control" name="foremanUsername" id="foremanUsername" aria-describedby="crewname" placeholder="" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="orgName">*Foreman Password</label>
+                            <input type="password" class="form-control" name="foremanPassword" id="foremanPassword"  aria-describedby="crewname" placeholder="" required>
+                            <small id="emailHelp" class="form-text text-muted">Password must be 8 characters with 1 uppercase, 1 lowercase and 1 number.</small>
+                        </div>
+                        <small id="emailHelp" class="form-text text-muted">* required</small>
+
+                    </div>
+                    <div class="modal-split">
+                        <div class="form-group">
+                            <label for="orgName">*Foreman First Name</label>
+                            <input type="text" class="form-control" name="foremanFirst" id="foremanFirst"  aria-describedby="crewname" placeholder="" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="orgName">*Foreman Last Name</label>
+                            <input type="text" class="form-control" name="foremanLast" id="formanLast"  aria-describedby="crewname" placeholder="" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="orgName">Foreman Middle Name</label>
+                            <input type="text" class="form-control" name="foremanMiddle"  aria-describedby="crewname" placeholder="">
+                        </div>
+                        <small id="emailHelp" class="form-text text-muted">* required</small>
+
+                        <p id="formError"></p>
+                        <button id="formSubmit" class="btn btn-primary" type="submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <!--Nothing Goes Here but is needed! -->
+            </div>
+        </div>
+    </div>
+</div>

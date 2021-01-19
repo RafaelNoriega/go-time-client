@@ -20,6 +20,7 @@
                     <div class="form-group col-sm-12 col-md-6">
                         <label for="costCenter">Grower</label>
                         <select class="form-control" name="costCenter" id="costCenter">
+                            <option value="ALL">All</option>
                             <% for(let center of costCenters){%>
                                 <option value=<%= center.code%>><%= center.name%></option>
                             <%}%>
@@ -55,7 +56,16 @@
                     </div>
                 </div>
             </div>
-            <span class="btn btn-primary btn_export_file pr-2">Export</span>
+            <div class="row">
+                <div class="col-12">
+                    <span class="btn btn-primary btn_export_file pr-2">AgStar Export</span>
+                    <span class="btn btn-primary btn_export_summary pr-2">Summary Export</span>
+                    <span id="resetExport" class="btn btn-primary">Reset Exports</span>
+
+                </div>
+            </div>
+
+
             <div class="form-group pull-right col-lg-4">
                 <input type="text" class="search form-control" placeholder="Search by typing here..">
             </div>
@@ -65,7 +75,7 @@
 					
 					<div class="spinner-border" role="status">
 						<span class="sr-only">Loading...</span>
-					  </div>
+                    </div>
 				</div>
                 <div class="panel panel-default">
             </div>
@@ -84,6 +94,20 @@
     </div>
     <div class="form-group">
         <input type="text" name="employeeId" id="employeeIdInput">
+    </div>
+</form>
+<form id="exportSummary" action="records/summaryReport" method="POST" hidden>
+    <div class="form-group">
+        <input type="date" name="startDate" id="startDateInputSummary">
+    </div>
+    <div class="form-group">
+        <input type="date" name="endDate" id="endDateInputSummary">
+    </div>
+    <div class="form-group">
+        <input type="text" name="costCenter" id="costCenterInputSummary">
+    </div>
+    <div class="form-group">
+        <input type="text" name="employeeId" id="employeeIdInputSummary">
     </div>
 </form>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

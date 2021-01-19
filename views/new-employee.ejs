@@ -5,18 +5,20 @@
     <div class="row">
         <div class="col-12">
             <button class="btn btn-primary" id="toggle-button">+ New Employee</button>
+            <button class="btn btn-primary" id="toggle-bulk">+ Employee Bulk Load</button>
+
         </div>
     </div>
+    <% if(error) { %>
+        <p style="color:red;font-size: small;text-align: center;"> <strong> <%= error %> </strong></p>
+    <% } %>
+    <% if(message) { %>
+        <p style="color:green;font-size: small;text-align: center;"> <strong> <%= message %> </strong></p>
+    <% } %>
     <div class="row d-none" id="toggle-form">
         <div class="col-12">
             <form action="/new-employee" method="POST" style="padding-top: 80px;">
                 <h1 class="text-center text-primary" style="padding-top: 10px;padding-bottom: 10px;">New Employee</h1>
-                <% if(error) { %>
-                    <p style="color:red;font-size: small;text-align: center;"> <strong> <%= error %> </strong></p>
-                <% } %>
-                <% if(message) { %>
-                    <p style="color:green;font-size: small;text-align: center;"> <strong> <%= message %> </strong></p>
-                <% } %>
                 <div class="form-group" id="eId-input">
                     <label for="employeeId">Employee Id</label>
                     <input class="form-control" type="text" name="employeeId">
@@ -43,6 +45,22 @@
                     <label for="asdf">Worker</label>
                 </div>
                 <button class="btn btn-primary btn-block button-primary" type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+       <div class="row d-none" id="toggle-bulk-form">
+        <div class="col-12">
+            <form action="/employeeBulkUpload" method="POST" enctype="multipart/form-data" style="padding-top: 80px;">
+                <h1 class="text-center text-primary" style="padding-top: 10px;padding-bottom: 10px;">Bulk Load</h1>
+                <div class="form-group">
+                    <a class="btn btn-secondary btn" href="forms/EmployeeUploadTemplate.csv" >Download Template</a>
+                    <br><br>
+                    <label for="uploadFile">File</label>
+                    <input type="file" name="uploadFile" class="form-control-file" id="uploadFile">
+                    <small>*Must be Pivot Pay csv employee template.</small>
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Submit</button>
             </form>
         </div>
     </div>
@@ -100,7 +118,12 @@
         $("#toggle-button").click( function(){
             console.log('toggle')
             $("#toggle-form").toggleClass("d-none")
-        })
+        });
+
+        $("#toggle-bulk").click( function(){
+            console.log('toggle')
+            $("#toggle-bulk-form").toggleClass("d-none")
+        });
     });
 </script>
 </body>
