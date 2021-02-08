@@ -1,15 +1,9 @@
 <% include ./partials/_header.ejs%>
 <% include ./partials/_navbar.ejs%>
-    <div class="container-md">
+<div class="container-md">
     <div class="row">
         <div class="col" style="padding-bottom: 40px;">
             <h1 class="text-center text-primary" style="padding-top: 10px;padding-bottom: 10px;">Time Entry</h1>
-            <% if(message) { %>
-                <p style="color:green;font-size: small;text-align: center;"> <strong> <%= message %> </strong></p>
-            <% } %>
-            <% if(error) { %>
-                <p style="color:red;font-size: small;text-align: center;"> <strong> <%= error %> </strong></p>
-            <% } %>
             <form action="/time" method="POST" style="padding-top: 80px;">
                 <div class="form-row">
                     <div class="form-group col-12" id="date-input">
@@ -84,31 +78,58 @@
     </div>
 </div>
 
+<% if(message.length > 0 || error.length > 0) { %>
+    <div class="modal fade" id="success-message" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="false">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Success</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                <p style="color:green;font-size: small;text-align: center;"><%= message %></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<% } %>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
 <script src="javascripts/Table-With-Search.js"></script>
 <script src="javascripts/checked-count.js"></script>
 <script>
-$('#checkAll').click(function(event) {   
-    if(this.checked) {
-        // Iterate each checkbox
-        $(':checkbox').each(function() {
-            this.checked = true;                        
-        });
-    } else {
-        $(':checkbox').each(function() {
-            this.checked = false;                       
-        });
-    }
-});
-
-$(document).ready( function(){
-    $('input[type="checkbox"]').change(function(){
-        let count = $('input[type="checkbox"]:checked').not('#checkAll').length;
-        $('#checked-count').html(`Selected: ${count}`);
+    $('#checkAll').click(function(event) {   
+        if(this.checked) {
+            // Iterate each checkbox
+            $(':checkbox').each(function() {
+                this.checked = true;                        
+            });
+        } else {
+            $(':checkbox').each(function() {
+                this.checked = false;                       
+            });
+        }
     });
 
-});
+    $(document).ready( function(){
+        $('input[type="checkbox"]').change(function(){
+            let count = $('input[type="checkbox"]:checked').not('#checkAll').length;
+            $('#checked-count').html(`Selected: ${count}`);
+        });
+
+    });
+    <%if(message.length > 0){%>
+    $(window).on('load', function() {
+        $('body').addClass('modal-open');
+        $('#success-message').modal('show');
+    });
+    <%}%>
 </script>
 </body>
 

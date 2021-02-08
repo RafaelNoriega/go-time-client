@@ -1,6 +1,6 @@
 <nav class="navbar navbar-light navbar-expand-md pb-5">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#"><img src="images/Pivot-Logo.png" alt="" height="30"></a>
+        <a class="navbar-brand" href="#"><img src="/images/Pivot-Logo.png" alt="" height="30"></a>
          <button data-toggle="collapse" class="navbar-toggler ml-auto" data-target="#navcol-1">
             <span class="sr-only">Toggle navigation</span>
             <span class="navbar-toggler-icon"></span>
@@ -17,6 +17,7 @@
             </ul>
             <button type="button" class="btn btn-secondary ml-2" data-toggle="modal" data-target="#multipageModal"><i class="fas fa-user-plus"></i> New Crew</button>
             <button type="button" class="btn btn-secondary ml-2" data-toggle="modal" data-target="#deletecrewmodal"><i class="fas fa-trash"></i> Delete Crews</button>
+            <a class="btn btn-secondary ml-2" href="/admin/editAccount"><i class="fas fa-cog"></i> Edit Account</a>
             <a class="btn btn-secondary ml-2" href="/users/logout"><i class="fas fa-sign-out-alt"></i> Log Out</a>
         </div>
        
@@ -26,24 +27,24 @@
 <!-- Modal delete crew -->
 <div class="modal fade" id="deletecrewmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Delete Crew</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Delete Crew</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+            <p>Are you sure you want to enable crew deletion?</p>
+            <p class="text-danger">Deleting a crew will PERMANENTLY delete its foreman, workers and timecards.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary"   data-dismiss="modal" id="enableDelete">Accept</button>
+            </div>
         </div>
-        <div class="modal-body">
-          <p>Are you sure you want to enable crew deletion?</p>
-          <p class="text-danger">Deleting a crew will PERMANENTLY delete its foreman, workers and timecards.</p>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary"   data-dismiss="modal" id="enableDelete">Accept</button>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
     
 <!-- Multi Page Modal -->
 <div class="modal fade" id="multipageModal"  tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

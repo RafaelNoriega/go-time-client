@@ -26,7 +26,6 @@ const docClient = new dynamodb.DocumentClient();
 exports.admin = (req, res, next) =>{
     res.render('admin', {user:req.user});
 }
-
 exports.adminSet = (req, res, next) => {
     let org = req.params.org;
     let user = req.user;
@@ -34,11 +33,10 @@ exports.adminSet = (req, res, next) => {
     user['pk'] = org.replace('_', '#');
 
     req.login(user, error => {
-        if (error) { return next(error); }
+        if (error) { console.log(error)}
         return res.redirect('/time');
     })
 }
-
 exports.adminReset = (req, res, next) => {
     let user = req.user;
     user['pk'] = user.originalPK;
@@ -49,7 +47,6 @@ exports.adminReset = (req, res, next) => {
         return res.redirect('/admin');
     });
 }
-
 exports.adminNewCrew = (req, res, next) => {
     try {
         console.log(req.body);
@@ -159,7 +156,6 @@ exports.adminNewCrew = (req, res, next) => {
         res.redirect('/admin');
     }
 }
-
 exports.adminDeleteCrew = async (req, res, next) => {
     try {
         let user = req.user;
@@ -229,7 +225,240 @@ exports.adminDeleteCrew = async (req, res, next) => {
         return res.redirect('/admin');
     }
 }
+exports.editAccount = (req, res, next) => {
+    res.render('editAccount', {user:req.user});
 
+}
+exports.editAccountsPost = async (req, res, next)=> {
+    //---------------------- Get deleted arrays -------------------
+        let deletedGrowers = [];
+        let crewsToUpdate  = []
+        //loop through user growers array and see if that grower is in body growers array. If it is push to new array.
+        for( const grower of req.user.growers){
+            let found = false;
+            for(const newGrower of req.body.growers){
+                
+                if(newGrower.growerName === grower.growerName && newGrower.growerId === grower.growerId){
+                    found=true;
+                }
+            }
+            if(!found){
+                deletedGrowers.push(grower);
+            }
+        }
+
+        //find user crews that need to be updated and remove their grower from the user's list of crews.
+        for(const [crewIndex, crew] of req.user.orgList.entries()){
+            // console.log(crew.name);
+            let offset = 0;
+            let newGrowersList = [...crew.growers];
+            for(const [growerIndex, crewGrower] of crew.growers.entries()){
+                for(const deletedGrower of deletedGrowers){
+                    if(crewGrower.growerName === deletedGrower.growerName && crewGrower.growerId === deletedGrower.growerId){
+                        console.log(crewGrower.growerName,' vs ' , deletedGrower.growerName, ' at ', growerIndex);
+                        //see if that crew is already in the array of crews that need to be updated. Since the removal of more than one grower can make duplicated in the crewsToUpdate array.
+                        crewsToUpdate.push(crew);
+                        console.log('pushed: ', crew);
+                        newGrowersList.splice(growerIndex-offset, 1);
+                        offset++;
+                    }
+                }
+            }
+            req.user.orgList[crewIndex].growers = [...newGrowersList];
+        }
+
+
+
+        console.log("crews to update: ", crewsToUpdate);
+        console.log("deleted growers: ", deletedGrowers);
+
+    req.user.growers = [...req.body.growers];
+    req.user.firstName = req.body.firstName;
+    req.user.lastName = req.body.lastName;
+
+    let params = {
+        TableName: process.env.AWS_DATABASE,
+        Item:req.user
+    }
+    
+    await docClient.put(params).promise().catch(error => console.log(error));
+
+    // update crews that have one of the deleted growers.
+    if(crewsToUpdate.length > 0){
+        for(const crew of crewsToUpdate){
+
+            let params = {
+                TableName: process.env.AWS_DATABASE,
+                KeyConditionExpression: "#pk = :pk AND #sk = :sk",
+                ExpressionAttributeNames: {
+                    "#pk": "pk",
+                    "#sk": "sk"
+                },
+                ExpressionAttributeValues: {
+                    ":pk": crew.org,
+                    ":sk": "METADATA"
+                }
+            };
+    
+            let update = await docClient.query(params).promise();
+            update = update.Items[0];
+            let newCostCenters = [...update.costCenters];
+
+            // console.log("Update Crew: ",update);
+            //loop through the costCenters of the crew to find the deleted grower
+            console.log(update.costCenters);
+            let offset = 0;
+            for(const [index, grower] of update.costCenters.entries()){
+                for(let deletedGrower of deletedGrowers){
+                    if(grower.name == deletedGrower.growerName && grower.code == deletedGrower.growerId){
+                        console.log(grower.name,' vs ' ,deletedGrower.growerName, ' at ', index);
+                        //delete grower from crew list
+                        newCostCenters.splice(index-offset, 1);
+                        offset++;
+                    }
+                }
+            }
+            console.log(newCostCenters);
+            update.costCenters = [...newCostCenters];
+            console.log(update);
+            params = {
+                TableName: process.env.AWS_DATABASE,
+                Item: update
+            }
+
+            await docClient.put(params).promise().catch(error => console.log(error))
+        }
+    }
+
+    req.login(req.user, error => {
+        if (error) { return next(error); }
+        return res.redirect('/admin/editAccount');
+    });
+}
+
+exports.editCrew = async (req, res, next) => {
+    try {
+        const {user} = req;
+
+        let params = {
+            TableName: process.env.AWS_DATABASE,
+            KeyConditionExpression: "#pk = :pk AND #sk = :sk",
+            ExpressionAttributeNames: {
+                "#pk": "pk",
+                "#sk": "sk"
+            },
+            ExpressionAttributeValues: {
+                ":pk": user.pk,
+                ":sk": "METADATA"
+            }
+        }
+
+        let {Items} = await docClient.query(params).promise().catch(error => console.log(error));
+
+        let userGrowers = []
+        let crewCostCenters = []
+        let crew =  Items[0];
+
+        for(let grower of user.growers){
+            let flag = true;
+            for(let costCenter of crew.costCenters){
+                if(grower.growerName === costCenter.name && grower.growerId === costCenter.code){
+                    crewCostCenters.push(grower);
+                    flag = false
+                }
+            }
+            if(flag){
+                userGrowers.push(grower);
+            }
+        }
+
+        res.render('editCrew', {user: req.user, crew, userGrowers, crewCostCenters});
+    } catch (error) {
+        console.log(error);
+    }
+};
+exports.editCrewPost = async (req, res, next) => {
+    try {
+        let user = req.user;
+        let growers = req.body.costCenters;
+        let newName = req.body.name;
+
+        let newGrowers = []
+        let newCostCenters = []
+
+        for(let grower of growers){
+            let splitGrower = grower.split('-');
+            let newGrower = {
+                growerName: splitGrower[0],
+                growerId: splitGrower[1]
+            }
+
+            let newCostCenter = {
+                name: splitGrower[0],
+                code: splitGrower[1]
+            }
+
+            newGrowers.push(newGrower);
+            newCostCenters.push(newCostCenter);
+        }
+        console.log(newGrowers);
+        //update Crew
+
+        let params = {
+            TableName: process.env.AWS_DATABASE,
+            KeyConditionExpression: "#pk = :pk AND #sk = :sk",
+            ExpressionAttributeNames: {
+                "#pk": "pk",
+                "#sk": "sk"
+            },
+            ExpressionAttributeValues: {
+                ":pk": user.pk,
+                ":sk": "METADATA"
+            }
+        }
+        let {Items} = await docClient.query(params).promise().catch(error => console.log(error));
+        let crew = Items[0];
+
+        crew.costCenters = [...newCostCenters];
+        crew.name =  newName;
+
+        params = {
+            TableName: process.env.AWS_DATABASE,
+            Item: crew
+        }
+        await docClient.put(params).promise().catch(e => console.log(e));
+
+        //update orgList for user
+        let i = 0;
+        for(let [index, org] of user.orgList.entries()){
+            if(org.org === user.pk){
+                console.log(org.org);
+                user.orgList[index].growers = [...newGrowers];
+                user.orgList[index].name = newName;
+                i=index;
+            }
+        }   
+        let orgPK = user.pk;
+        user.pk = user.originalPK;
+        delete user['originalPK'];
+
+        console.log(user.orgList[i]);
+        params = {
+            TableName: process.env.AWS_DATABASE,
+            Item: user
+        }
+        
+
+        await docClient.put(params).promise().catch(e => console.log(e));
+        
+        user['originalPK'] = user.pk;
+        user.pk = orgPK;
+
+        res.redirect('/editCrew');
+    } catch (error) {
+        console.log(error)
+    }
+}
 exports.getEmployees = async (req, res, next)=>{
     const {user} = req;
 
@@ -414,7 +643,6 @@ exports.updateEmployee = async (req, res, next)=>{
     }
 
 }
-
 exports.getTime = async (req, res, next) => {
     try {
         const {user} = req;
@@ -461,13 +689,13 @@ exports.getTime = async (req, res, next) => {
         
     }
 }
-
 exports.newTime = async (req, res, next) => {
     try {
         const {employees, date, hours, breakTime, costCenter, rate1, rate2, rate3} = req.body
         let employeesList = employees;
         typeof date == 'string'? safeDate = date: safeDate=date[0];
         const {user} = req;
+
         if(employees == undefined){
             req.flash('error', 'No employees were selected')
             res.redirect('/time');
@@ -476,7 +704,7 @@ exports.newTime = async (req, res, next) => {
                 console.log('single employee')
                 employeesList = [employees];
             }   
-
+            
             for(let e of employeesList){  
                 let params = {
                     TableName : process.env.AWS_DATABASE,
@@ -551,7 +779,7 @@ exports.newTime = async (req, res, next) => {
     
                 await docClient.put(params).promise().catch(error => console.log("Error Submitting Timecard: ",error))
             }
-            req.flash('message', 'Time cards have been submitted')
+            req.flash('message', `${date} \n ${employeesList.length} time cards have been submitted for grower ${costCenter}.`)
             res.redirect('/time');
         }
     } catch (error) {
@@ -559,7 +787,6 @@ exports.newTime = async (req, res, next) => {
     }
 
 }
-
 exports.timeRecords = async (req, res, next) => {     
     try {
         let user = req.user;
@@ -589,7 +816,6 @@ exports.timeRecords = async (req, res, next) => {
         res.render(res.render('records', {user, startDate, endDate}));
     }      
 }
-
 exports.timeRecordsData = async (req, res, next) => {
     try {
         const {user} = req;
@@ -701,7 +927,6 @@ exports.timeRecordsData = async (req, res, next) => {
         console.log(error);
     }
 }
-
 exports.timeRecordsDataUpdate = async (req, res, next) => {
     let user = req.user;
     const {row_id, col_name, col_val} = req.body;
@@ -739,7 +964,6 @@ exports.timeRecordsDataUpdate = async (req, res, next) => {
         return res.sendStatus(200)
     }
 }
-
 exports.timeRecordsDataExport = async (req, res, next) => {
     function fetchData(employeeId, costCenter, startDate, endDate, user){
         return new Promise(  (resolve, reject) => {
@@ -1346,7 +1570,6 @@ exports.timeRecordsDataExport = async (req, res, next) => {
 
     main();
 }
-
 exports.timeRecordsDataReset = async (req, res, next) => {
     function fetchData(employeeId, costCenter, startDate, endDate, user){
         return new Promise(  (resolve, reject) => {
@@ -1486,7 +1709,6 @@ exports.timeRecordsDataReset = async (req, res, next) => {
     }
     Main();
 }
-
 exports.dailySummaryReport = async (req, res, next) => {
 
     function fetchData(employeeId, costCenter, startDate, endDate, user){

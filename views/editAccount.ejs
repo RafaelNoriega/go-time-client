@@ -1,0 +1,128 @@
+<% include ./partials/_header.ejs%>
+<nav class="navbar navbar-light navbar-expand-md pb-5">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><img src="/images/Pivot-Logo.png" alt="" height="30"></a>
+         <button data-toggle="collapse" class="navbar-toggler ml-auto" data-target="#navcol-1">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse"
+            id="navcol-1">
+            <ul class="nav navbar-nav mr-auto">
+               
+            </ul>
+            <ul class="nav navbar-nav">
+                <li class="nav-item dropdown">
+
+                </li> 
+            </ul>
+            <a class="btn btn-secondary ml-auto" href="/admin/"><i class="fas fa-home"></i> Home</a>
+            <a class="btn btn-secondary ml-2" href="/users/logout"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+       
+    </div>
+</nav>
+    <div class="container-md">
+    <div class="row">
+        <div class="col" style="padding-bottom: 40px;">
+            <h1 class="text-primary text-center pt-5 pb-5">Edit Account</h1>
+            <div class="row">
+                <div class="col-lg-10 offset-lg-1 col-md-12">
+                    <form action="/admin/editAccount" method="post">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">User Name</label>
+                            <input type="text" class="form-control" id="username" aria-describedby="emailHelp" value=<%= user.username%> readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">First Name</label>
+                            <input type="text" class="form-control" name="firstName" aria-describedby="emailHelp" value=<%= user.firstName%>>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Last Name</label>
+                            <input type="text" class="form-control" name="lastName" value=<%= user.lastName%>>
+                        </div>
+                        <div class="row pt-4 pb-4">
+                            <div id="growerSection" class="col">
+                                <h5 class="text-center">Growers</h1>
+                                <%for(const [index, value] of user.growers.entries()){%>
+                                <div id="growerRow" class="row">
+                                    <div class="col-5">
+                                        <div class="form-group">
+                                            <label for="exampleInputPassword1">Grower Name</label>
+                                            <input type="text" class="form-control" name="growers<%=`[${index}][growerName]`%>" value="<%- value.growerName%>">
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <div class="form-group">
+                                            <label for="exampleInputPassword1">Grower Id</label>
+                                            <input type="text" class="form-control" name="growers<%=`[${index}][growerId]`%>" value="<%- value.growerId%>">
+                                        </div>
+                                    </div>
+                                    <div class="col-1">
+                                        <div class="form-group">
+                                            <label for="exampleInputPassword1" class="text-white">a</label>
+                                            <button type="button" class="form-control" onclick="deleteGrower(event)"><i class="fas fa-trash text-danger"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <%}%>
+                            </div>
+                            <div class="col-12">
+                                <button type="button" class="btn btn-secondary"  onclick="addGrower()"> <i class="fas fa-plus"></i> Add Grower</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+<script src="/javascripts/Table-With-Search.js"></script>
+<script src="/javascripts/checked-count.js"></script>
+<script src="/javascripts/adminNavbar.js"></script>
+
+<script>
+	
+    let count = $("[id^=growerRow]").length;
+
+    function addGrower(){
+        count++;
+        let div = `<div id="growerRow" class="row">
+                        <div class="col-5">
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Grower Name</label>
+                                <input type="text" class="form-control" name="growers[${count}][growerName]">
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Grower Id</label>
+                                <input type="text" class="form-control" name="growers[${count}][growerId]">
+                            </div>
+                        </div>
+                        <div class="col-1">
+                            <div class="form-group">
+                                <label for="exampleInputPassword1" class="text-white">a</label>
+                                <button type="button" class="form-control text-danger" onclick="deleteGrower(event)"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+        $('#growerSection').append(div);
+    }
+
+    function deleteGrower(event){
+        let section = $(event.target).closest('#growerRow');
+        console.log(section);
+
+        section.remove();
+    }
+
+</script>
+
+</body>
+
+</html>

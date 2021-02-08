@@ -1,0 +1,56 @@
+<% include ./partials/_header.ejs%>
+<% include ./partials/_navbar.ejs%>
+
+    <div class="container-md">
+    <div class="row">
+        <div class="col" style="padding-bottom: 40px;">
+            <h1 class="text-primary text-center pt-5 pb-5">Edit Account</h1>
+            <div class="row">
+                <div class="col-lg-10 offset-lg-1 col-md-12">
+                    <form action="/editCrew" method="post">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Name</label>
+                            <input type="text" class="form-control" name="name" id="username" aria-describedby="emailHelp" value="<%- crew.name%>" >
+                        </div>
+                        <h5>CostCenters</h5>
+                         <div class="row pt-4 pb-4">
+                            <div id="growerSection" class="col">
+                                <h5 class="text-center">Growers</h1>
+                                <div id="growerRow" class="row">
+                                <%for(const costCenter of crewCostCenters){%>
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input type="checkbox" name="costCenters" class="form-check-input" value="<%-`${costCenter.growerName}-${costCenter.growerId}`%>" checked>
+                                            <label class="form-check-label" for="exampleCheck1"><%-`${costCenter.growerName}-${costCenter.growerId}`%></label>
+                                        </div>
+                                    </div>
+                                <%}%>
+                                <%for(const grower of userGrowers){%>
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input type="checkbox" name="costCenters" class="form-check-input" value="<%-`${grower.growerName}-${grower.growerId}`%>">
+                                            <label class="form-check-label" for="exampleCheck1"><%-`${grower.growerName}-${grower.growerId}`%></label>
+                                        </div>
+                                    </div>
+                                <%}%>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+<script src="/javascripts/Table-With-Search.js"></script>
+<script src="/javascripts/checked-count.js"></script>
+<script src="/javascripts/adminNavbar.js"></script>
+
+
+</body>
+
+</html>

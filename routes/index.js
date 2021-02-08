@@ -14,9 +14,17 @@ router.post('/admin/newCrew', userCheckAdmin, controllers.adminNewCrew);
 
 router.get('/admin/deleteCrew/:crew', userCheckAdmin, controllers.adminDeleteCrew);
 
+router.get('/admin/editAccount', userCheckAdmin, controllers.editAccount);
+
+router.post('/admin/editAccount', userCheckAdmin, controllers.editAccountsPost);
+
 router.get('/admin/set/:org', userCheckAdmin, controllers.adminSet);
 
 router.get('/admin/reset', userCheckAdmin, controllers.adminReset);
+
+router.get('/editCrew', userCheck, controllers.editCrew);
+
+router.post('/editCrew', userCheck, controllers.editCrewPost);
 
 router.get('/new-employee',userCheck,(req, res, next) => res.render('new-employee', {user:req.user, error: req.flash('error'), message: req.flash('message')}) );
 
