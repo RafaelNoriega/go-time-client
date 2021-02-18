@@ -62,7 +62,9 @@ exports.adminNewCrew = (req, res, next) => {
         let costCenters = [];
         let jobsList = [];
         
-        if(Array.isArray(growers)){
+        if(growers === undefined){
+            
+        }else if(Array.isArray(growers)){
             for(let growerSet of growers){
                 let grower = growerSet.split(',');  
                 
@@ -82,7 +84,9 @@ exports.adminNewCrew = (req, res, next) => {
             costCenters.push(costCenterSet);
         }
 
-        if(Array.isArray(jobs)){
+        if(jobs === undefined){
+            
+        }else if(Array.isArray(jobs)){
             for(let jobSet of jobs){
                 let job = jobSet.split(',');  
                 
@@ -524,7 +528,9 @@ exports.editCrewPost = async (req, res, next) => {
         let newCostCenters = []
         let newJobs = [];
 
-        if(Array.isArray(costCenters)){
+        if(costCenters === undefined){
+            
+        }else if(Array.isArray(costCenters)){
             for(let grower of costCenters){
                 let splitGrower = grower.split('-');
     
@@ -557,7 +563,9 @@ exports.editCrewPost = async (req, res, next) => {
             newCostCenters.push(newCostCenter);
         }
 
-        if(Array.isArray(jobs)){
+        if(jobs === undefined){
+            
+        }else if(Array.isArray(jobs)){
             for(let job of jobs){
                 let splitJob = job.split('-');
     
