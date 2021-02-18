@@ -45,32 +45,86 @@
                             <div id="growerSection" class="col">
                                 <h5 class="text-center">Growers</h1>
                                 <%for(const [index, value] of user.growers.entries()){%>
-                                <div id="growerRow" class="row">
-                                    <div class="col-5">
-                                        <div class="form-group">
-                                            <label for="exampleInputPassword1">Grower Name</label>
-                                            <input type="text" class="form-control" name="growers<%=`[${index}][growerName]`%>" value="<%- value.growerName%>">
+                                    <div id="growerRow" class="row">
+                                        <div class="col-5">
+                                            <div class="form-group">
+                                                <label for="exampleInputPassword1">Grower Name</label>
+                                                <input type="text" class="form-control" name="growers<%=`[${index}][growerName]`%>" value="<%- value.growerName%>">
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <div class="form-group">
+                                                <label for="exampleInputPassword1">Grower Id</label>
+                                                <input type="text" class="form-control" name="growers<%=`[${index}][growerId]`%>" value="<%- value.growerId%>">
+                                            </div>
+                                        </div>
+                                        <div class="col-1">
+                                            <div class="form-group">
+                                                <label for="exampleInputPassword1" class="text-white">a</label>
+                                                <button type="button" class="form-control" onclick="deleteGrower(event)"><i class="fas fa-trash text-danger"></i></button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-5">
-                                        <div class="form-group">
-                                            <label for="exampleInputPassword1">Grower Id</label>
-                                            <input type="text" class="form-control" name="growers<%=`[${index}][growerId]`%>" value="<%- value.growerId%>">
-                                        </div>
-                                    </div>
-                                    <div class="col-1">
-                                        <div class="form-group">
-                                            <label for="exampleInputPassword1" class="text-white">a</label>
-                                            <button type="button" class="form-control" onclick="deleteGrower(event)"><i class="fas fa-trash text-danger"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
                                 <%}%>
                             </div>
                             <div class="col-12">
                                 <button type="button" class="btn btn-secondary"  onclick="addGrower()"> <i class="fas fa-plus"></i> Add Grower</button>
                             </div>
                         </div>
+                        <div class="row pt-4 pb-4">
+                            <div id="jobSection" class="col">
+                                <h5 class="text-center">Jobs</h5>
+                                <%if(user.jobs){%>
+                                    <%for(const [index, value] of user.jobs.entries()){%>
+                                        <div id="jobRow" class="row">
+                                            <div class="col-5">
+                                                <div class="form-group">
+                                                    <label for="exampleInputPassword1">Job Name</label>
+                                                    <input type="text" class="form-control" name="jobs<%=`[${index}][jobName]`%>" value="<%- value.jobName%>">
+                                                </div>
+                                            </div>
+                                            <div class="col-5">
+                                                <div class="form-group">
+                                                    <label for="exampleInputPassword1">Job Id</label>
+                                                    <input type="text" class="form-control" name="jobs<%=`[${index}][jobId]`%>" value="<%- value.jobId%>">
+                                                </div>
+                                            </div>
+                                            <div class="col-1">
+                                                <div class="form-group">
+                                                    <label for="exampleInputPassword1" class="text-white">a</label>
+                                                    <button type="button" class="form-control" onclick="deleteJob(event)"><i class="fas fa-trash text-danger"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <%}%>
+                                <%} else {%>
+                                    <div id="jobRow" class="row">
+                                            <div class="col-5">
+                                                <div class="form-group">
+                                                    <label for="exampleInputPassword1">Job Name</label>
+                                                    <input type="text" class="form-control" name="jobs[0][jobName]" >
+                                                </div>
+                                            </div>
+                                            <div class="col-5">
+                                                <div class="form-group">
+                                                    <label for="exampleInputPassword1">Job Id</label>
+                                                    <input type="text" class="form-control" name="jobs[0][jobId]">
+                                                </div>
+                                            </div>
+                                            <div class="col-1">
+                                                <div class="form-group">
+                                                    <label for="exampleInputPassword1" class="text-white">a</label>
+                                                    <button type="button" class="form-control" onclick="deleteJob(event)"><i class="fas fa-trash text-danger"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                <%}%>    
+                            </div>
+                             <div class="col-12">
+                                <button type="button" class="btn btn-secondary"  onclick="addJob()"> <i class="fas fa-plus"></i> Add Job</button>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-primary btn-block">Update</button>
                     </form>
                 </div>
@@ -88,6 +142,7 @@
 <script>
 	
     let count = $("[id^=growerRow]").length;
+    let jobCount = $("[id^=jobRow]").length;
 
     function addGrower(){
         count++;
@@ -113,10 +168,40 @@
                     </div>`;
         $('#growerSection').append(div);
     }
+    
+    function addJob(){
+        jobCount++;
+        let div = `<div id="jobRow" class="row">
+                        <div class="col-5">
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Job Name</label>
+                                <input type="text" class="form-control" name="jobs[${jobCount}][jobName]">
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Job Id</label>
+                                <input type="text" class="form-control" name="jobs[${jobCount}][jobId]">
+                            </div>
+                        </div>
+                        <div class="col-1">
+                            <div class="form-group">
+                                <label for="exampleInputPassword1" class="text-white">a</label>
+                                <button type="button" class="form-control text-danger" onclick="deleteJob(event)"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+            $('#jobSection').append(div);
+    }
 
     function deleteGrower(event){
         let section = $(event.target).closest('#growerRow');
-        console.log(section);
+
+        section.remove();
+    }
+
+    function deleteJob(event){
+        let section = $(event.target).closest('#jobRow');
 
         section.remove();
     }

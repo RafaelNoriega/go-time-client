@@ -51,7 +51,7 @@ exports.adminNewCrew = (req, res, next) => {
     try {
         console.log(req.body);
         
-        const {crewName, foremanUsername, foremanPassword, foremanFirst, foremanLast, foremanMiddle, growers} = req.body;
+        const {crewName, foremanUsername, foremanPassword, foremanFirst, foremanLast, foremanMiddle, growers, jobs, crewNumber} = req.body;
 
         const employeeId = uuid();
         const crewUUID = uuid();
@@ -60,6 +60,8 @@ exports.adminNewCrew = (req, res, next) => {
 
         let growersList = [];
         let costCenters = [];
+        let jobsList = [];
+        
         if(Array.isArray(growers)){
             for(let growerSet of growers){
                 let grower = growerSet.split(',');  
@@ -80,9 +82,26 @@ exports.adminNewCrew = (req, res, next) => {
             costCenters.push(costCenterSet);
         }
 
+        if(Array.isArray(jobs)){
+            for(let jobSet of jobs){
+                let job = jobSet.split(',');  
+                
+                let set = {jobName: job[0].replace(/_/g, ' '), jobId: job[1]};
+                jobsList.push(set);
+
+            }
+        }else{
+            let job = jobSet.split(',');
+
+            let set = {jobName: job[0].replace(/_/g, ' '), jobId: job[1]};
+            jobsList.push(set);
+        }
+
         const orgListNewCrew = {
             growers: growersList, 
+            jobs: jobsList,
             name: crewName, 
+            number: crewNumber,
             org: pk,
             dateCreated: new Date().toISOString(),
             status: 'active'
@@ -90,7 +109,9 @@ exports.adminNewCrew = (req, res, next) => {
 
         const newCrew = {
             costCenters,
+            jobs: jobsList,
             name: crewName,
+            number: crewNumber,
             pk,
             sk: "METADATA",
             dateCreated: new Date().toISOString(),
@@ -230,110 +251,206 @@ exports.editAccount = (req, res, next) => {
 
 }
 exports.editAccountsPost = async (req, res, next)=> {
-    //---------------------- Get deleted arrays -------------------
-        let deletedGrowers = [];
-        let crewsToUpdate  = []
-        //loop through user growers array and see if that grower is in body growers array. If it is push to new array.
-        for( const grower of req.user.growers){
-            let found = false;
-            for(const newGrower of req.body.growers){
-                
-                if(newGrower.growerName === grower.growerName && newGrower.growerId === grower.growerId){
-                    found=true;
+    try {
+        
+        //---------------------- Get deleted arrays -------------------
+            let deletedGrowers = [];
+            let deletedJobs = [];
+    
+            let crewsToUpdateGrowers  = [];
+            let crewsToUpdateJobs = [];
+    
+            //console.log(req.user)
+            console.log(req.body.jobs);
+    
+            //loop through user growers and jobs array and see if that grower is in body growers array. If it is push to new array.
+            for( const grower of req.user.growers){
+                let found = false;
+                for(const newGrower of req.body.growers){
+                    
+                    if(newGrower.growerName === grower.growerName && newGrower.growerId === grower.growerId){
+                        found=true;
+                    }
+                }
+                if(!found){
+                    deletedGrowers.push(grower);
                 }
             }
-            if(!found){
-                deletedGrowers.push(grower);
-            }
-        }
-
-        //find user crews that need to be updated and remove their grower from the user's list of crews.
-        for(const [crewIndex, crew] of req.user.orgList.entries()){
-            // console.log(crew.name);
-            let offset = 0;
-            let newGrowersList = [...crew.growers];
-            for(const [growerIndex, crewGrower] of crew.growers.entries()){
-                for(const deletedGrower of deletedGrowers){
-                    if(crewGrower.growerName === deletedGrower.growerName && crewGrower.growerId === deletedGrower.growerId){
-                        console.log(crewGrower.growerName,' vs ' , deletedGrower.growerName, ' at ', growerIndex);
-                        //see if that crew is already in the array of crews that need to be updated. Since the removal of more than one grower can make duplicated in the crewsToUpdate array.
-                        crewsToUpdate.push(crew);
-                        console.log('pushed: ', crew);
-                        newGrowersList.splice(growerIndex-offset, 1);
-                        offset++;
+            if(req.user.jobs){
+                for( const job of req.user.jobs){
+                    let found = false;
+                    for(const newJob of req.body.jobs){
+                        
+                        if(newJob.jobName === job.jobName && newJob.jobId === job.jobId){
+                            found=true;
+                        }
+                    }
+                    if(!found){
+                        deletedJobs.push(job);
                     }
                 }
             }
-            req.user.orgList[crewIndex].growers = [...newGrowersList];
-        }
-
-
-
-        console.log("crews to update: ", crewsToUpdate);
+    
+            //find user crews that need to be updated and remove their grower or jobs from the user's list of crews.
+            for(const [crewIndex, crew] of req.user.orgList.entries()){
+                // console.log(crew.name);
+                let offset = 0;
+                let newGrowersList = [...crew.growers];
+                for(const [growerIndex, crewGrower] of crew.growers.entries()){
+                    for(const deletedGrower of deletedGrowers){
+                        if(crewGrower.growerName === deletedGrower.growerName && crewGrower.growerId === deletedGrower.growerId){
+                            console.log(crewGrower.growerName,' vs ' , deletedGrower.growerName, ' at ', growerIndex);
+                            //see if that crew is already in the array of crews that need to be updated. Since the removal of more than one grower can make duplicated in the crewsToUpdateGrowers array.
+                            crewsToUpdateGrowers.push(crew);
+                            console.log('pushed: ', crew);
+                            newGrowersList.splice(growerIndex-offset, 1);
+                            offset++;
+                        }
+                    }
+                }
+                req.user.orgList[crewIndex].growers = [...newGrowersList];
+            }
+    
+            if(req.user.jobs){
+                for(const [crewIndex, crew] of req.user.orgList.entries()){
+                    // console.log(crew.name);
+                    let offset = 0;
+                    if(crew.jobs){
+                        let newJobsList = [...crew.jobs];
+                        for(const [jobIndex, crewJob] of crew.jobs.entries()){
+                            for(const deletedJob of deletedJobs){
+                                if(crewJob.jobName === deletedJob.jobName && crewJob.jobId === deletedJob.jobId){
+                                    console.log(crewJob.jobName,' vs ' , deletedJob.jobName, ' at ', jobIndex);
+                                    //see if that crew is already in the array of crews that need to be updated. Since the removal of more than one grower can make duplicated in the crewsToUpdateGrowers array.
+                                    crewsToUpdateJobs.push(crew);
+                                    console.log('pushed: ', crew);
+                                    newJobsList.splice(jobIndex-offset, 1);
+                                    offset++;
+                                }
+                            }
+                        }
+                        req.user.orgList[crewIndex].jobs = [...newJobsList];
+                    }
+                }
+            }
+    
+        console.log("growers to update: ", crewsToUpdateGrowers);
+        console.log("jobs to update: ", crewsToUpdateJobs);
         console.log("deleted growers: ", deletedGrowers);
-
-    req.user.growers = [...req.body.growers];
-    req.user.firstName = req.body.firstName;
-    req.user.lastName = req.body.lastName;
-
-    let params = {
-        TableName: process.env.AWS_DATABASE,
-        Item:req.user
-    }
+        console.log('deleted jobs: ', deletedJobs);
     
-    await docClient.put(params).promise().catch(error => console.log(error));
-
-    // update crews that have one of the deleted growers.
-    if(crewsToUpdate.length > 0){
-        for(const crew of crewsToUpdate){
-
-            let params = {
-                TableName: process.env.AWS_DATABASE,
-                KeyConditionExpression: "#pk = :pk AND #sk = :sk",
-                ExpressionAttributeNames: {
-                    "#pk": "pk",
-                    "#sk": "sk"
-                },
-                ExpressionAttributeValues: {
-                    ":pk": crew.org,
-                    ":sk": "METADATA"
-                }
-            };
+        //update the users name, growers and jobs
+        req.user['firstName'] = req.body.firstName;
+        req.user['lastName'] = req.body.lastName;
+        req.user['growers'] = [...req.body.growers];
+        req.user['jobs'] = [...req.body.jobs];
     
-            let update = await docClient.query(params).promise();
-            update = update.Items[0];
-            let newCostCenters = [...update.costCenters];
-
-            // console.log("Update Crew: ",update);
-            //loop through the costCenters of the crew to find the deleted grower
-            console.log(update.costCenters);
-            let offset = 0;
-            for(const [index, grower] of update.costCenters.entries()){
-                for(let deletedGrower of deletedGrowers){
-                    if(grower.name == deletedGrower.growerName && grower.code == deletedGrower.growerId){
-                        console.log(grower.name,' vs ' ,deletedGrower.growerName, ' at ', index);
-                        //delete grower from crew list
-                        newCostCenters.splice(index-offset, 1);
-                        offset++;
+    
+        let params = {
+            TableName: process.env.AWS_DATABASE,
+            Item:req.user
+        }
+        
+        await docClient.put(params).promise().catch(error => console.log(error));
+    
+        // update crews that have one of the deleted growers.
+        if(crewsToUpdateGrowers.length > 0){
+            for(const crew of crewsToUpdateGrowers){
+    
+                let params = {
+                    TableName: process.env.AWS_DATABASE,
+                    KeyConditionExpression: "#pk = :pk AND #sk = :sk",
+                    ExpressionAttributeNames: {
+                        "#pk": "pk",
+                        "#sk": "sk"
+                    },
+                    ExpressionAttributeValues: {
+                        ":pk": crew.org,
+                        ":sk": "METADATA"
+                    }
+                };
+        
+                let update = await docClient.query(params).promise();
+                update = update.Items[0];
+                let newCostCenters = [...update.costCenters];
+    
+                // console.log("Update Crew: ",update);
+                //loop through the costCenters of the crew to find the deleted grower
+                console.log(update.costCenters);
+                let offset = 0;
+                for(const [index, grower] of update.costCenters.entries()){
+                    for(const deletedGrower of deletedGrowers){
+                        if(grower.name == deletedGrower.growerName && grower.code == deletedGrower.growerId){
+                            console.log(grower.name,' vs ' ,deletedGrower.growerName, ' at ', index);
+                            //delete grower from crew list
+                            newCostCenters.splice(index-offset, 1);
+                            offset++;
+                        }
                     }
                 }
+                console.log(newCostCenters);
+                update['costCenters'] = [...newCostCenters];
+                console.log(update);
+                params = {
+                    TableName: process.env.AWS_DATABASE,
+                    Item: update
+                }
+    
+                await docClient.put(params).promise().catch(error => console.log(error))
             }
-            console.log(newCostCenters);
-            update.costCenters = [...newCostCenters];
-            console.log(update);
-            params = {
-                TableName: process.env.AWS_DATABASE,
-                Item: update
-            }
-
-            await docClient.put(params).promise().catch(error => console.log(error))
         }
-    }
 
-    req.login(req.user, error => {
-        if (error) { return next(error); }
-        return res.redirect('/admin/editAccount');
-    });
+        if(crewsToUpdateJobs.length > 0){
+            for(const crew of crewsToUpdateJobs){
+                let params = {
+                    TableName: process.env.AWS_DATABASE,
+                    KeyConditionExpression: "#pk = :pk AND #sk = :sk",
+                    ExpressionAttributeNames: {
+                        "#pk": "pk",
+                        "#sk": "sk"
+                    },
+                    ExpressionAttributeValues: {
+                        ":pk": crew.org,
+                        ":sk": "METADATA"
+                    }
+                }
+
+                let update = await docClient.query(params).promise();
+                update = update.Items[0];
+
+                let newJobs = [...update.jobs];
+
+                let offset = 0;
+                for(const [index, job] of update.jobs.entries()){
+                    for(const deletedJob of deletedJobs){
+                        if(job.jobName == deletedJob.jobName && job.jobId == deletedJob.jobId){
+                            console.log(job.jobName,' vs ' ,deletedJob.jobName, ' at ', index);
+                            //delete grower from crew list
+                            newJobs.splice(index-offset, 1);
+                            offset++;
+                        }
+                    }
+                }
+                console.log(newJobs); 
+                update.jobs = [...newJobs];
+                console.log(update);
+                params = {
+                    TableName: process.env.AWS_DATABASE,
+                    Item: update
+                }
+    
+                await docClient.put(params).promise().catch(error => console.log(error))
+
+            }
+        }
+    
+        req.login(req.user, error => {
+            if (error) { return next(error); }
+            return res.redirect('/admin/editAccount');
+        });
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 exports.editCrew = async (req, res, next) => {
@@ -355,8 +472,10 @@ exports.editCrew = async (req, res, next) => {
 
         let {Items} = await docClient.query(params).promise().catch(error => console.log(error));
 
-        let userGrowers = []
-        let crewCostCenters = []
+        let userGrowers = [];
+        let userJobs = [];
+        let crewCostCenters = [];
+        let crewJobs = [];
         let crew =  Items[0];
 
         for(let grower of user.growers){
@@ -372,7 +491,26 @@ exports.editCrew = async (req, res, next) => {
             }
         }
 
-        res.render('editCrew', {user: req.user, crew, userGrowers, crewCostCenters});
+        if(crew.jobs){
+            for(const job of user.jobs){
+                let flag = true;
+                for(const crewJob of crew.jobs){
+                    if(job.jobName === crewJob.jobName && job.jobId === crewJob.jobId){
+                        crewJobs.push(job);
+                        flag = false
+                    }
+                }
+                if(flag){
+                    userJobs.push(job);
+                }
+            }
+        }else{
+            userJobs = [...user.jobs];
+        }
+        console.log('User Jobs: ', userJobs);
+        console.log('Crew Jobs: ', crewJobs);
+
+        res.render('editCrew', {user: req.user, crew, userGrowers, crewCostCenters, userJobs, crewJobs});
     } catch (error) {
         console.log(error);
     }
@@ -380,14 +518,31 @@ exports.editCrew = async (req, res, next) => {
 exports.editCrewPost = async (req, res, next) => {
     try {
         let user = req.user;
-        let growers = req.body.costCenters;
-        let newName = req.body.name;
+        const {name, number, costCenters, jobs} = req.body;
 
         let newGrowers = []
         let newCostCenters = []
+        let newJobs = [];
 
-        for(let grower of growers){
-            let splitGrower = grower.split('-');
+        if(Array.isArray(costCenters)){
+            for(let grower of costCenters){
+                let splitGrower = grower.split('-');
+    
+                let newGrower = {
+                    growerName: splitGrower[0],
+                    growerId: splitGrower[1]
+                }
+    
+                let newCostCenter = {
+                    name: splitGrower[0],
+                    code: splitGrower[1]
+                }
+    
+                newGrowers.push(newGrower);
+                newCostCenters.push(newCostCenter);
+            }
+        }else{
+            let splitGrower = costCenters.split('-');
             let newGrower = {
                 growerName: splitGrower[0],
                 growerId: splitGrower[1]
@@ -401,7 +556,31 @@ exports.editCrewPost = async (req, res, next) => {
             newGrowers.push(newGrower);
             newCostCenters.push(newCostCenter);
         }
+
+        if(Array.isArray(jobs)){
+            for(let job of jobs){
+                let splitJob = job.split('-');
+    
+                let newJob = {
+                    jobName: splitJob[0],
+                    jobId: splitJob[1]
+                }
+    
+                newJobs.push(newJob);
+            }
+        }else{
+            let splitJob = jobs.split('-');
+    
+            let newJob = {
+                jobName: splitJob[0],
+                jobId: splitJob[1]
+            }
+
+            newJobs.push(newJob);
+        }
+
         console.log(newGrowers);
+        console.log(newJobs);
         //update Crew
 
         let params = {
@@ -419,8 +598,10 @@ exports.editCrewPost = async (req, res, next) => {
         let {Items} = await docClient.query(params).promise().catch(error => console.log(error));
         let crew = Items[0];
 
-        crew.costCenters = [...newCostCenters];
-        crew.name =  newName;
+        crew['costCenters'] = [...newCostCenters];
+        crew['jobs'] = [...newJobs];
+        crew['name'] =  name;
+        crew['number'] = number;
 
         params = {
             TableName: process.env.AWS_DATABASE,
@@ -433,8 +614,10 @@ exports.editCrewPost = async (req, res, next) => {
         for(let [index, org] of user.orgList.entries()){
             if(org.org === user.pk){
                 console.log(org.org);
-                user.orgList[index].growers = [...newGrowers];
-                user.orgList[index].name = newName;
+                user.orgList[index]['growers'] = [...newGrowers];
+                user.orgList[index]['name'] = name;
+                user.orgList[index]['number'] = number;
+                user.orgList[index]['jobs'] = [...newJobs];
                 i=index;
             }
         }   
@@ -1393,17 +1576,18 @@ exports.timeRecordsDataExport = async (req, res, next) => {
                 //Pieces Pay Only
                 for(let set of set1){
                     if(parseInt(set.pieces1) > 0 && parseFloat(set.rate1) > -1 ){
-                        fileBody +=  createFileRow(key , date, costCenter, '', set.pieces1, set.rate1, taskName = '', 'PC', '');
+                        console.log(hours)
+                        fileBody +=  createFileRow(key , date, costCenter, parseFloat(hours), set.pieces1, set.rate1, taskName = '', 'PC', '');
                     }
                 }
                 for(let set of set2){
                     if(parseInt(set.pieces2) > 0 && parseFloat(set.rate2) > -1 ){
-                        fileBody +=  createFileRow(key , date, costCenter, '', set.pieces2, set.rate2, taskName = '', 'PC', '')
+                        fileBody +=  createFileRow(key , date, costCenter, parseFloat(hours), set.pieces2, set.rate2, taskName = '', 'PC', '')
                     }
                 }
                 for(let set of set3){
                     if(parseInt(set.pieces3) > 0 && parseFloat(set.rate3) > -1 ){
-                        fileBody +=  createFileRow(key , date, costCenter, '', set.pieces3, set.rate3, taskName = '', 'PC', '')
+                        fileBody +=  createFileRow(key , date, costCenter, parseFloat(hours), set.pieces3, set.rate3, taskName = '', 'PC', '')
                     }
                 }
 
@@ -1440,7 +1624,7 @@ exports.timeRecordsDataExport = async (req, res, next) => {
         fileBody += '         ';
         //*Employee Id must be 5 characters long
         fileBody += id.padEnd(5, ' ');
-        //*Timecard date must be formated as MM/DD/YYYY
+        //*Timecard date must be formatted as MM/DD/YYYY
         fileBody += moment(date).format('MM/DD/YYYY');
         //unused
         fileBody += '      ';
@@ -1453,15 +1637,16 @@ exports.timeRecordsDataExport = async (req, res, next) => {
         //unused
         fileBody += '                                                              ';
         //Hours Worked 8 spaces 
-        if(payCode === 'HR' || payCode === 'OV'){
+        // if(payCode === 'HR' || payCode === 'OV' || payCode === 'PC'){
             if(hours < 1){
+                console.log('hours in add row: ', hours);
                 fileBody += parseFloat(hours).toPrecision(6); 
             }else{
                 fileBody += parseFloat(hours).toPrecision(7);
             } 
-        } else { 
-            fileBody += '        ';
-        }
+        // } else { 
+            // fileBody += '        ';
+        // }
         //Piece QTY, 10
         if(payCode === 'PC'){
             fileBody += parseInt(pieces).toPrecision(9);

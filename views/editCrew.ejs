@@ -12,7 +12,10 @@
                             <label for="exampleInputEmail1">Name</label>
                             <input type="text" class="form-control" name="name" id="username" aria-describedby="emailHelp" value="<%- crew.name%>" >
                         </div>
-                        <h5>CostCenters</h5>
+                         <div class="form-group">
+                            <label for="exampleInputEmail1">Number</label>
+                            <input type="text" class="form-control" name="number" id="username" aria-describedby="emailHelp" value="<%- crew.number%>" >
+                        </div>
                          <div class="row pt-4 pb-4">
                             <div id="growerSection" class="col">
                                 <h5 class="text-center">Growers</h1>
@@ -30,6 +33,29 @@
                                         <div class="form-check">
                                             <input type="checkbox" name="costCenters" class="form-check-input" value="<%-`${grower.growerName}-${grower.growerId}`%>">
                                             <label class="form-check-label" for="exampleCheck1"><%-`${grower.growerName}-${grower.growerId}`%></label>
+                                        </div>
+                                    </div>
+                                <%}%>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="row pt-4 pb-4">
+                            <div id="jobSection" class="col">
+                                <h5 class="text-center">Jobs</h1>
+                                <div id="jobRow" class="row">
+                                <%for(const job of crewJobs){%>
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                            <input type="checkbox" name="jobs" class="form-check-input" value="<%-`${job.jobName}-${job.jobId}`%>" checked>
+                                            <label class="form-check-label" for="exampleCheck1"><%-`${job.jobName}-${job.jobId}`%></label>
+                                        </div>
+                                    </div>
+                                <%}%>
+                                <%for(const job of userJobs){%>
+                                    <div class="col-12">
+                                        <div class="form-check">
+                                             <input type="checkbox" name="jobs" class="form-check-input" value="<%-`${job.jobName}-${job.jobId}`%>">
+                                            <label class="form-check-label" for="exampleCheck1"><%-`${job.jobName}-${job.jobId}`%></label>
                                         </div>
                                     </div>
                                 <%}%>

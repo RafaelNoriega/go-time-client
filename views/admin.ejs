@@ -13,6 +13,9 @@
                                 <div class="card-body">
                                     <i class="fas fa-address-card fa-3x"></i>
                                     <h5 class="card-title pt-2"><%=account.name%></p>
+                                    <%if(account.number){%>
+                                        <p>Crew Number: <%=account.number%></p>
+                                    <%}%>
                                 </div>
                                 <h5>Growers</h5>
                                 <ul class="list-group list-group-flush">
@@ -20,6 +23,14 @@
                                         <li class="list-group-item"><%=grower.growerName%></li>   
                                     <%}%>
                                 </ul>
+                                <h5 class="pt-4">Jobs</h5>
+                                <%if(account.jobs){%>
+                                <ul class="list-group list-group-flush">
+                                    <%for(let job of account.jobs){%>
+                                        <li class="list-group-item"><%=job.jobName%></li>   
+                                    <%}%>
+                                </ul>
+                                <%}%>
                                 <div class="card-body">
                                     <a href=<%= `/admin/set/${account.org.replace('#', "_")}` %> class="card-link">View Account</a>
                                     <br><br>
