@@ -1,23 +1,37 @@
 <% include ./partials/_header.ejs%>
 <% include ./partials/_navbar.ejs%>
-<div class="container-md">
+<div class="container-xl">
     <div class="row">
         <div class="col" style="padding-bottom: 40px;">
             <h1 class="text-center text-primary" style="padding-top: 10px;padding-bottom: 10px;">Time Entry</h1>
             <form action="/time" method="POST" style="padding-top: 80px;">
                 <div class="form-row">
-                    <div class="form-group col-12" id="date-input">
+                <div class="col-12">
+                        <h5>Times</h3>
+                    </div>
+                    <div class="form-group col-md-6 col-sm-12" id="date-input">
                         <label for="date">Date</label>
                         <input class="form-control" type="date" name="date" value=<%= day %> required>
                     </div>
+                    
                      <div class="form-group col-md-6 col-sm-12" id="hours-input-1">
                         <label for="hours">Hours</label>
                         <input class="form-control" type="number" name="hours" value="8" step="any">
                     </div>
                     <div class="form-group col-md-6 col-sm-12" id="break-input">
+                        <label for="hours">Non-Productive Time</label>
+                        <input class="form-control" type="number" name="nonProductiveTime" value="0" step="any">
+                        <small>Value should be presented in minutes</small>
+                    </div>
+                    <div class="form-group col-md-6 col-sm-12" id="break-input">
                         <label for="hours">Break</label>
                         <input class="form-control" type="number" name="breakTime" value="20" step="any">
                         <small>Value should be presented in minutes</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-12">
+                        <h5>Bonus Rates</h3>
                     </div>
                     <div class="form-group col-md-6 col-sm-12" id="break-input">
                         <label for="hours">Bonus Rate 1</label>
@@ -46,7 +60,12 @@
                             <input class="form-control" type="number" value="0.0" name="rate3" step="any">
                         </div>
                     </div>
-                    <div class="form-group col-12" id="cost-center">
+                </div>
+                <div class="form-row">
+                <div class="col-12">
+                        <h5>Job Detail</h3>
+                    </div>
+                    <div class="form-group col-md-6 col-sm-12" id="cost-center">
                         <label for="cost-center">Grower</label>
                         <select class="form-control" id="cost-center" name="costCenter">
                             <% for(let center of costCenters){%>
@@ -54,8 +73,20 @@
                             <%}%>
                         </select>
                     </div>
-                    <div class="form-group" id="employee-input">
-                        <label for="employee">Employees</label>
+                     <div class="form-group col-md-6 col-sm-12" id="job">
+                        <label for="cost-center">Job</label>
+                        <select class="form-control" id="cost-center" name="job">
+                            <% for(let job of jobs){%>
+                                <option value=<%= job.jobId%>><%= job.jobName%></option>
+                            <%}%>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                <div class="col-12">
+                        <h5>Employees</h3>
+                    </div>
+                    <div class="form-group col-12" id="employee-input">
                         <div class="form-group">
                             <div class="form-check">
                                 <input class="form-check-input form-control-lg" type="checkbox" id="checkAll" name="checkAll"/>
@@ -71,8 +102,8 @@
                             </div>
                         <%}%>
                     </div>
-                    <button class="btn btn-primary btn-block button-primary" type="submit">Submit</button>
                 </div>
+                <button class="btn btn-primary btn-block button-primary" type="submit">Submit</button>
             </form>
         </div>
     </div>

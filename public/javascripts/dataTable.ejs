@@ -84,16 +84,16 @@ $(document).ready(function($)
 				tbl +='<th scope="col">Employee Number</th>';
 				tbl +='<th scope="col">Employee Name</th>';
                 tbl +='<th scope="col">Hours</th>';
-				// tbl +='<th scope="col">Flat Rate</th>';
-				tbl +='<th scope="col">Piece Pay Only</th>';
                 tbl +='<th scope="col">Break (min)</th>';
+				tbl +='<th scope="col">Non Productive Time</th>';
+				tbl +='<th scope="col">Piece Pay Only</th>';
                 tbl +='<th scope="col">Pieces 1</th>';
                 tbl +='<th scope="col">Rate 1</th>';  
                 tbl +='<th scope="col">Pieces 2</th>';
                 tbl +='<th scope="col">Rate 2</th>';  
                 tbl +='<th scope="col">Pieces 3</th>';
                 tbl +='<th scope="col">Rate 3</th>';                
-                tbl +='<th scope="col">Table</th>';
+                tbl +='<th scope="col">Job</th>';
 				tbl +='<th scope="col">Grower</th>';
 				tbl +='<th scope="col">Exported</th>';
 				tbl +='<th></th>'
@@ -123,16 +123,16 @@ $(document).ready(function($)
 							tbl +='<td scope="row" ><div>'+val['lastName']+ ', ' +val['firstName']+ ' ' +val['middleName'] +'</div></td>';
 							
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="hours">'+parseFloat(val['hours'])+'</div></td>';
-							// tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="flatRate">'+parseFloat(val['flatRate'])+'</div></td>';
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieceOnly">'+val['pieceOnly']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="breakTime">'+val['breakTime']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="nonProductiveTime">'+parseFloat(val['nonProductiveTime'])+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieceOnly">'+val['pieceOnly']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces1">'+val['pieces1']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate1">'+val['rate1']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces2">'+val['pieces2']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate2">'+val['rate2']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="pieces3">'+val['pieces3']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="rate3">'+val['rate3']+'</div></td>';
-							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="table">'+val['table']+'</div></td>';
+							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="job">'+val['job']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="costCenter">'+val['costCenter']+'</div></td>';
 							tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="exported">'+val['exported']+'</div></td>';	
 							tbl +='<td><div id="deleteUser"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';
