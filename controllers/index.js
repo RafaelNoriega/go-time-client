@@ -96,7 +96,7 @@ exports.adminNewCrew = (req, res, next) => {
 
             }
         }else{
-            let job = jobSet.split(',');
+            let job = jobs.split(',');
 
             let set = {jobName: job[0].replace(/_/g, ' '), jobId: job[1]};
             jobsList.push(set);

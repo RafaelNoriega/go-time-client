@@ -147,10 +147,11 @@ $(document).ready(function($)
             tbl += '<td scope="row" class="font-weight-bold">Total</td>';
             tbl += `<td scope="row" class="font-weight-bold">${tbl_data.filter(entry => entry.position == 'worker').length}</td>`;
             tbl += '<td scope="row" id="hoursTotals" class="font-weight-bold"></td>';
-			tbl += '<td scope="row"></td>';
             tbl += '<td scope="row" id="breakTotals" class="font-weight-bold"></td>';
-            tbl += '<td scope="row" id="pieces1Totals" class="font-weight-bold"></td>';
+			tbl += '<td scope="row id="nonProductiveTime class="font-weight-bold"""></td>';
             tbl += '<td scope="row"></td>';
+            tbl += '<td scope="row" id="pieces1Totals" class="font-weight-bold"></td>';
+			tbl += '<td scope="row"></td>';
             tbl += '<td scope="row" id="pieces2Totals" class="font-weight-bold"></td>';
             tbl += '<td scope="row"></td>';
             tbl += '<td scope="row" id="pieces3Totals" class="font-weight-bold"></td>';
