@@ -20,6 +20,7 @@ $(document).ready(function ($){
 		tbl +='<th>Last Name</th>';
 		tbl +='<th>First Name</th>';
 		tbl +='<th>Middle Name</th>';
+		tbl +='<th>Wage</th>';
 		tbl +='<th>Active</th>';
 		tbl +='<th>Delete</th>';
 		tbl +='</tr>';
@@ -33,6 +34,12 @@ $(document).ready(function ($){
 			tbl += '<td><div id="lastName" class="row_data" edit_type="click" col_name="lastName">'+employee.lastName+'</div></td>';
 			tbl += '<td><div id="firstName" class="row_data" edit_type="click" col_name="firstName">'+employee.firstName+'</div></td>';
 			tbl += '<td><div class="row_data" edit_type="click" col_name="middleName">'+employee.middleName+'</div></td>';
+			if(employee.wage){
+				tbl += '<td><div class="row_data" edit_type="click" col_name="wage">'+employee.wage+'</div></td>';
+			}else{
+				tbl += '<td><div class="row_data" edit_type="click" col_name="wage">0.00</div></td>';
+
+			}
 			tbl += '<td><div class="row_data" edit_type="click" col_name="active">'+employee.active+'</div></td>';
 			// tbl +='<td scope="row" ><div class="row_data" edit_type="click" col_name="delete"><button class="btn btn-danger" data-toggle="modal" data-target="#deleteUserModal"><i class= "fas fa-trash text-light"></i></button></div></td>';
 			tbl +='<td><div id="deleteUser"><button class="btn btn-danger"><i class= "fas fa-trash text-light"></i></button></div></td>';

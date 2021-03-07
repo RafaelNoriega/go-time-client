@@ -46,7 +46,9 @@ router.get('/records/data', userCheck, controllers.timeRecordsData);
 
 router.post('/records/data', userCheck, controllers.timeRecordsDataUpdate);
 
-router.post('/records/data/export', userCheck, controllers.timeRecordsDataExport);
+router.post('/records/data/export/agstar', userCheck, controllers.agstarExport);
+
+router.post('/records/data/export/datatech', userCheck, controllers.datatechExport);
 
 router.post('/records/data/reset' , userCheck, controllers.timeRecordsDataReset);
 

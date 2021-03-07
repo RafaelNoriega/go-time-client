@@ -79,7 +79,7 @@ $(document).ready(function($)
 		tbl +='<table id="employee-data" class="table table-striped text-center pb-5">'
 			//--->create table header > start
 			tbl +='<thead class="bill-header cs">';
-				tbl +='<tr">';
+				tbl +='<tr>';
 				tbl +='<th scope="col">Date</th>';
 				tbl +='<th scope="col">Employee Number</th>';
 				tbl +='<th scope="col">Employee Name</th>';
@@ -303,7 +303,7 @@ $(document).ready(function($)
 		
 	})	
 	
-	$(document).on('click', '.btn_export_file', event => {
+	$(document).on('click', '.btn_export_file_agstar', event => {
         let startDate = $(document).find('#startDate').val();
         let endDate = $(document).find('#endDate').val();
 		let costCenter = $(document).find('#costCenter').val();
@@ -313,7 +313,23 @@ $(document).ready(function($)
 		$(document).find('#endDateInput').val(endDate);
 		$(document).find('#costCenterInput').val(costCenter);
 		$(document).find('#employeeIdInput').val(employeeId);
-		$(document).find('#exportForm').submit();
+		$(document).find('#exportFormAgstar').submit();
+		
+		$.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
+
+	});
+
+	$(document).on('click', '.btn_export_file_datatech', event => {
+        let startDate = $(document).find('#startDate').val();
+        let endDate = $(document).find('#endDate').val();
+		let costCenter = $(document).find('#costCenter').val();
+		let employeeId = $(document).find('#employeeId').val();
+        
+		$(document).find('#startDateInput_datatech').val(startDate);
+		$(document).find('#endDateInput_datatech').val(endDate);
+		$(document).find('#costCenterInput_datatech').val(costCenter);
+		$(document).find('#employeeIdInput_datatech').val(employeeId);
+		$(document).find('#exportFormDatatech').submit();
 		
 		$.get(`records/data?startDate=${startDate}&endDate=${endDate}&costCenter=${costCenter}&employeeId=${employeeId}`, data => create_html_table(data));
 

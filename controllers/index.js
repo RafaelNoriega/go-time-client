@@ -676,10 +676,10 @@ exports.getEmployees = async (req, res, next)=>{
     res.send(employees.filter(e => e.position == 'worker'));
 }
 exports.newEmployee = (req, res, next) => {
-    async  function Main() {
+    async function Main() {
         try {
-                const {employeeId, firstName, middleName, lastName, position} = req.body;
-                const {pk, groupId, ranch} = req.user;
+                const {employeeId, firstName, middleName, lastName, position, wage} = req.body;
+                const {pk} = req.user;
                 let params;
     
                 if(employeeId == ''){
@@ -696,10 +696,8 @@ exports.newEmployee = (req, res, next) => {
                             firstName: firstName ? firstName : " ", 
                             middleName: middleName ? middleName: " ", 
                             lastName: lastName ? lastName : " ",
-                            groupId,
-                            ranch,
                             active: true,
-                            role: 'user',
+                            wage,
                             position
                         }
                     };
@@ -744,6 +742,7 @@ exports.employeeBulkUpload = async (req, res, next) => {
                             middleName: row[3],
                             pk: user.pk,
                             position: row[4],
+                            wage: row[5],
                             sk: `EMP#${uuid()}`
                           };
 
@@ -913,18 +912,24 @@ exports.newTime = async (req, res, next) => {
                 };
         
                 let {Items} = await docClient.query(params).promise().catch(error => console.log(error));
+                const {employeeId, firstName, middleName, lastName, position} = Items[0]
+                let wage = 0.00;
+                //Individual employee wage rates was introduced after this was written so we there may be employee without a rate. In that case the timecard export will use an environment variable set to the min wage rate.
+                if(Items[0].wage){
+                    wage = Items[0].wage;
+                }
 
-                if(Items[0].position === 'manager'){
+                if(position === 'manager'){
                     params = {
                         TableName: process.env.AWS_DATABASE,
                         Item: {
                             pk: user.pk,
                             sk: `TIME#EMP#${e.substring(4)}#DATE#${date}`,
                             date: moment(date).format('YYYY-MM-DD'),
-                            id: Items[0].employeeId,
-                            firstName: Items[0].firstName,
-                            middleName: Items[0].middleName,
-                            lastName: Items[0].lastName,
+                            id: employeeId,
+                            firstName,
+                            middleName,
+                            lastName,
                             hours: 0,
                             nonProductiveTime,
                             flatRate: 0,
@@ -936,23 +941,24 @@ exports.newTime = async (req, res, next) => {
                             pieces3: 0,
                             rate3,
                             job,
+                            wage,
                             costCenter,
                             exported: false,
                             pieceOnly: false,
-                            position: Items[0].position
+                            position
                         }
                     }
-                }else if(Items[0].position === 'worker'){
+                }else if(position === 'worker'){
                     params = {
                         TableName: process.env.AWS_DATABASE,
                         Item: {
                             pk: user.pk,
                             sk: `TIME#EMP#${e.substring(4)}#DATE#${date}`,
                             date: moment(date).format('YYYY-MM-DD'),
-                            id: Items[0].employeeId,
-                            firstName: Items[0].firstName,
-                            middleName: Items[0].middleName,
-                            lastName: Items[0].lastName,
+                            id: employeeId,
+                            firstName,
+                            middleName,
+                            lastName,
                             hours,
                             nonProductiveTime,
                             flatRate: 0,
@@ -965,9 +971,10 @@ exports.newTime = async (req, res, next) => {
                             rate3,
                             costCenter,
                             job,
+                            wage,
                             exported: false,
                             pieceOnly: false,
-                            position: Items[0].position
+                            position
                         }
                     }
                 }
@@ -1070,7 +1077,7 @@ exports.timeRecordsDataUpdate = async (req, res, next) => {
         return res.sendStatus(200)
     }
 }
-exports.timeRecordsDataExport = async (req, res, next) => {
+exports.agstarExport = async (req, res, next) => {
     function updateExportedRows(data, user){
         return new Promise( (resolve, reject) => {
             for(const row of data){
@@ -1104,13 +1111,98 @@ exports.timeRecordsDataExport = async (req, res, next) => {
         
         try {
             const {user} = req;
-            const {startDate, endDate, costCenter, employeeId} = req.body
+            const {startDate, endDate, costCenter, employeeId} = req.body;
+
             let data = await fetchData(employeeId, costCenter, startDate, endDate, user);
             let fileBody = await asyncCreateFileBody(data, 'AgStar');
             let updated = await updateExportedRows(data, user);
 
             if(updated){
                 let exportFile = `./exports/${startDate}_${endDate+ user.firstName + user.lastName + costCenter}.txt`;
+                
+                fs.writeFile(exportFile, fileBody, (err) => {
+                    if (err) throw err;
+                    console.log('The file has been saved!');
+                    res.download(exportFile, error => {
+                        if(error){
+                            res.send(500);
+                        }
+                        //delete file after it is sent back to the user to free up space
+                        else{
+                            fs.unlinkSync(exportFile, error => {
+                                if(error) throw error;
+                            });
+                        }
+                    });
+                });
+            }
+        } catch (error) {
+            console.log(error);   
+        }
+    }
+
+    main();
+}
+
+exports.datatechExport = async (req, res, next) => {
+    function updateExportedRows(data, user){
+        return new Promise( (resolve, reject) => {
+            for(const row of data){
+                let params = {
+                    TableName : process.env.AWS_DATABASE,
+                    Key:{
+                        "pk": user.pk,
+                        "sk": row.sk
+                    },
+                    UpdateExpression: "set #exported = :exported",
+                    ExpressionAttributeNames:{
+                        "#exported": "exported"
+                    },
+                    ExpressionAttributeValues: {
+                        ":exported": true 
+                    },
+                    ReturnValues:"UPDATED_NEW"
+                };
+
+                docClient.update(params, (error, data)=>{
+                    if(error){
+                        reject(error)
+                    }else{
+                        resolve(true);
+                    }
+                });
+            }
+        });
+    }
+    async function main(){
+        
+        try {
+            const {user} = req;
+            const {startDate, endDate, costCenter, employeeId} = req.body;
+
+            let params = {
+                TableName: process.env.AWS_DATABASE,
+                KeyConditionExpression: '#pk = :pk AND #sk = :sk',
+                ExpressionAttributeNames: {
+                    "#pk": "pk",
+                    "#sk": "sk"
+                },
+                ExpressionAttributeValues: {
+                    ":pk": user.pk,
+                    ":sk": 'METADATA'
+                }
+            };
+
+            const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
+
+            let crewId = Items[0].number;
+
+            let data = await fetchData(employeeId, costCenter, startDate, endDate, user);
+            let fileBody = await asyncCreateFileBody(data, 'DataTech', crewId);
+            let updated = await updateExportedRows(data, user);
+
+            if(updated){
+                let exportFile = `./exports/${startDate}_${endDate+ user.firstName + user.lastName + costCenter}.csv`;
                 
                 fs.writeFile(exportFile, fileBody, (err) => {
                     if (err) throw err;
