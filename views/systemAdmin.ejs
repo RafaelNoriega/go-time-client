@@ -1,0 +1,109 @@
+<% include ./partials/_header.ejs%>
+<% include ./partials/_navbar-admin.ejs%>
+    <div class="container-md">
+    <div class="row">
+        <div class="col">
+            <form> 
+                <div class="form-row">
+                    <div class="form-group col-sm-12 col-md-6">
+                        <label>Start Date</label>
+                        <input class="form-control" type="date" name="startDate" id="startDate">
+                    </div>
+                    <div class="form-group col-sm-12 col-md-6">
+                        <label>End Date</label>
+                        <input class="form-control" type="date" name="endDate" id="endDate">
+                    </div>
+
+                    <button class="btn btn-primary mt-4" type="button" id="dateSearch">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col" style="padding-bottom: 40px;">
+            <h1 class="text-center text-primary pt-5 pb-5">System Admin Portal</h1> 
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">User</th>
+                    <th scope="col">Crew</th>
+                    <th scope="col">Exports</th>
+                    <th scope="col">Date Range</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
+<script src="/javascripts/adminNavbar.js"></script>
+<script>
+    let start = new Date();
+    let day = start.getDay();
+    let end;
+
+    //sunday - saturday = 0 - 6
+    if(day == 0){
+        start.setDate(start.getDate() + 1);
+        
+        end = new Date();
+        end.setDate( end.getDate() + 7);
+    }else if(day == 1){
+        end = new Date();
+        end.setDate(end.getDate() + 6);
+
+    }else if(day == 2){
+        start.setDate(start.getDate() - 1);
+
+        end = new Date();
+        end.setDate(end.getDate() + 5);
+    }else if(day == 3){
+        start.setDate(start.getDate() - 2);
+
+        end = new Date();
+        end.setDate(end.getDate() + 4);
+    }else if(day == 4){
+        start.setDate(start.getDate() - 3);
+
+        end = new Date();
+        end.setDate(end.getDate() + 3);
+    }else if(day == 5){
+        start.setDate(start.getDate() - 4); 
+
+        end = new Date();
+        end.setDate(end.getDate() + 2);
+    }else if(day == 6){
+        start.setDate(start.getDate() - 5);
+
+        end = new Date();
+        end.setDate(end.getDate() + 1);
+    }
+
+    let startDate = `${start.getFullYear()}-${ start.getMonth().toString().length < 2? '0' + (start.getMonth()+1): start.getMonth() + 1 }-${start.getDate().toString().length < 2 ? '0' + start.getDate(): start.getDate()}`;
+    let endDate = `${end.getFullYear()}-${ end.getMonth().toString().length < 2? '0' + (end.getMonth()+1): end.getMonth() + 1 }-${end.getDate().toString().length < 2 ? '0' + end.getDate(): end.getDate()}`;
+    $('#startDate').val(startDate);
+    $('#endDate').val(endDate);
+
+    $.get('/systemAdmin/data', {startDate, endDate}, function(data){
+        let line = '' 
+
+        for(let row of data){
+            const {pk, employeeUserName, crewName, startDateSearch, endDateSearch, exports} = row;
+            let rowDate = new Date(pk);
+            rowDate = `${rowDate.getFullYear()}-${ rowDate.getMonth().toString().length < 2? '0' + (rowDate.getMonth()+1): rowDate.getMonth() + 1 }-${rowDate.getDate().toString().length < 2 ? '0' + rowDate.getDate(): rowDate.getDate()}`
+
+            line += `<tr><th scope="row">${rowDate}</th><td>${employeeUserName}</td><td>${crewName}</td><td>${exports}</td><td>${startDateSearch} - ${endDateSearch}</td></tr>`;
+            console.log(line);
+        }
+        $(document).find('tbody').html(line);
+    });
+    </script>
+
+</body>
+
+</html>

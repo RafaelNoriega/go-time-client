@@ -3,7 +3,7 @@ let bcrypt = require('bcryptjs');
 
 var salt = bcrypt.genSaltSync(10);
 
-let password = "C6P+y3SA";
+let password = "Pivotpay1!";
 let hash = bcrypt.hashSync(password, salt);
 
 console.log(hash)

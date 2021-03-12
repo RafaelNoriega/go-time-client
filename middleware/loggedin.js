@@ -25,3 +25,13 @@ exports.userCheckAdmin = (req, res, next) => {
     res.redirect('/');
   } 
 }
+
+exports.userCheckSystemAdmin = (req, res, next) => {
+  const {user} = req;
+  if(user.pk.includes('SYS')){
+    next();
+  }else{
+    console.log("User is not a system admin");
+    res.redirect('/');
+  }
+}

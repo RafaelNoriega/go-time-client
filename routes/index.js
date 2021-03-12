@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const {userCheck, userCheckAdmin} = require('../middleware/loggedin');
+const {userCheck, userCheckAdmin, userCheckSystemAdmin} = require('../middleware/loggedin');
 const controllers = require('../controllers');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', {error: req.flash('error')});
 });
+
+router.get('/systemAdmin', userCheckSystemAdmin, controllers.systemAdmin);
+
+router.get('/systemAdmin/data', userCheckSystemAdmin, controllers.systemAdminData);
 
 router.get('/admin', userCheckAdmin, controllers.admin);
 

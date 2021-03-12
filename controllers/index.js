@@ -12,7 +12,7 @@ const { param } = require('../routes');
 const { resolve } = require('path');
 const { start } = require('repl');
 const { ProcessCredentials } = require('aws-sdk');
-const {asyncCreateFileBody, fetchData} = require('../lib/lib');
+const {asyncCreateFileBody, fetchData, saveExport} = require('../lib/lib');
 
 //default region is different than where the DynamoDb tables are.
 const AWS_CONFIG = { 
@@ -24,6 +24,37 @@ const AWS_CONFIG = {
 AWS.config.update(AWS_CONFIG);
 const docClient = new dynamodb.DocumentClient();
 
+exports.systemAdmin = (req, res, next) => {
+
+    res.render('systemAdmin', {user: req.user});
+
+}
+
+exports.systemAdminData = async (req, res, next) => {
+    const {startDate, endDate} = req.query;
+
+    let isoStartDate = new Date(startDate).toISOString();
+    let isoEndDate = new Date(endDate).toISOString();
+
+    let params = {
+        TableName: process.env.AWS_DATABASE_EXPORTS,
+        FilterExpression: `#pk >= :startDate AND #pk <= :endDate`,
+        ExpressionAttributeNames: {
+            '#pk': 'pk'
+        },
+        ExpressionAttributeValues: {
+            ':startDate': isoStartDate,
+            ':endDate': isoEndDate
+        }
+    };
+
+    try {
+        const {Items} = await docClient.scan(params).promise().catch(error => console.log(error));
+        res.send(Items);
+    } catch (error) {
+        console.log(error)
+    }
+}
 exports.admin = (req, res, next) =>{
     res.render('admin', {user:req.user});
 }
@@ -50,8 +81,6 @@ exports.adminReset = (req, res, next) => {
 }
 exports.adminNewCrew = (req, res, next) => {
     try {
-        console.log(req.body);
-        
         const {crewName, foremanUsername, foremanPassword, foremanFirst, foremanLast, foremanMiddle, growers, jobs, crewNumber} = req.body;
 
         const employeeId = uuid();
@@ -117,6 +146,7 @@ exports.adminNewCrew = (req, res, next) => {
             jobs: jobsList,
             name: crewName,
             number: crewNumber,
+            account: user.pk,
             pk,
             sk: "METADATA",
             dateCreated: new Date().toISOString(),
@@ -157,8 +187,9 @@ exports.adminNewCrew = (req, res, next) => {
                         pk,
                         sk: `EMP#${employeeId}`,
                         position: 'manager',
-                        ranch: '',
+                        crew: crewName,
                         username: foremanUsername,
+                        account: user.pk
                     }
                 }
             }]
@@ -1116,6 +1147,7 @@ exports.agstarExport = async (req, res, next) => {
             let data = await fetchData(employeeId, costCenter, startDate, endDate, user);
             let fileBody = await asyncCreateFileBody(data, 'AgStar');
             let updated = await updateExportedRows(data, user);
+            saveExport(employeeId, costCenter, startDate, endDate, user, data);
 
             if(updated){
                 let exportFile = `./exports/${startDate}_${endDate+ user.firstName + user.lastName + costCenter}.txt`;
@@ -1143,7 +1175,6 @@ exports.agstarExport = async (req, res, next) => {
 
     main();
 }
-
 exports.datatechExport = async (req, res, next) => {
     function updateExportedRows(data, user){
         return new Promise( (resolve, reject) => {
@@ -1200,6 +1231,7 @@ exports.datatechExport = async (req, res, next) => {
             let data = await fetchData(employeeId, costCenter, startDate, endDate, user);
             let fileBody = await asyncCreateFileBody(data, 'DataTech', crewId);
             let updated = await updateExportedRows(data, user);
+            saveExport(employeeId, costCenter, startDate, endDate, user, data);
 
             if(updated){
                 let exportFile = `./exports/${startDate}_${endDate+ user.firstName + user.lastName + costCenter}.csv`;
@@ -1226,6 +1258,37 @@ exports.datatechExport = async (req, res, next) => {
     }
 
     main();
+}
+exports.dailySummaryReport = async (req, res, next) => {
+    
+    async function Main(){
+        try {
+            const {user} = req;
+            const {startDate, endDate, costCenter, employeeId} = req.body
+            let data = await fetchData(employeeId, costCenter, startDate, endDate, user);
+            let file = await asyncCreateFileBody(data, 'summary');
+            saveExport(employeeId, costCenter, startDate, endDate, user, data);
+
+            fs.writeFile(`./exports/Summary.csv`, file, (err)=>{
+                if (err) throw err;
+                console.log('The file has been saved!');
+                res.download(`./exports/Summary.csv`, error => {
+                    if(error){
+                        res.send(500);
+                    }
+                    //delete file after it is sent back to the user to free up space
+                    else{
+                        fs.unlinkSync(`./exports/Summary.csv`, error => {
+                            if(error) throw error;
+                        });
+                    }
+                });
+             });
+        } catch (error) {
+         console.log(error);   
+        }
+    }
+    Main();
 }
 exports.timeRecordsDataReset = async (req, res, next) => {
 
@@ -1264,36 +1327,6 @@ exports.timeRecordsDataReset = async (req, res, next) => {
         } catch (error) {
             console.log(error)
             return res.sendStatus(500);
-        }
-    }
-    Main();
-}
-exports.dailySummaryReport = async (req, res, next) => {
-    
-    async function Main(){
-        try {
-            const {user} = req;
-            const {startDate, endDate, costCenter, employeeId} = req.body
-            let data = await fetchData(employeeId, costCenter, startDate, endDate, user);
-            let file = await asyncCreateFileBody(data, 'summary');
-
-            fs.writeFile(`./exports/Summary.csv`, file, (err)=>{
-                if (err) throw err;
-                console.log('The file has been saved!');
-                res.download(`./exports/Summary.csv`, error => {
-                    if(error){
-                        res.send(500);
-                    }
-                    //delete file after it is sent back to the user to free up space
-                    else{
-                        fs.unlinkSync(`./exports/Summary.csv`, error => {
-                            if(error) throw error;
-                        });
-                    }
-                });
-             });
-        } catch (error) {
-         console.log(error);   
         }
     }
     Main();

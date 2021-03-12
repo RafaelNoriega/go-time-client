@@ -49,9 +49,14 @@ router.post('/login', passport.authenticate('user',
   }),
 (req, res, next) => {
 
+  const {user} = req;
   if(req.user.pk.includes("ACC") ){
     console.log("Admin User");
     res.redirect('/admin');
+  }else if(req.user.pk.includes("SYS")){
+    console.log("Admin User");
+
+    res.redirect('/systemAdmin')
   }
   res.redirect('/time')
 });
