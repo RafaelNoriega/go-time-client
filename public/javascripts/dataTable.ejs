@@ -217,28 +217,46 @@ $(document).ready(function($)
 	$(document).on('click', '.row_data', function(event) 
 	{
 		event.preventDefault(); 
+		console.log('Is boolean column: ',$(this).attr('activeBooleanColumn'));
 
-		if($(this).attr('edit_type') == 'button')
+		if($(this).attr('edit_type') == 'button' || $(this).attr('activeBooleanColumn') == 'true')
 		{
 			return false; 
 		}
 
-		//make div editable
-		$(this).closest('div').attr('contenteditable', 'true');
-
 		let columnName = $(this).attr('col_name');
-
+		let booleanColumns = ['pieceOnly', 'exported'];
 		let digitColumns = ['hours', 'employeeNumber', 'breakTime', 'pieces1' , 'rate1' , 'pieces2' , 'rate2' , 'pieces3' , 'rate3', 'table'];
-		if(digitColumns.includes(columnName)){
+
+		if(booleanColumns.includes(columnName)){
+			$(this).attr('original_entry', $(this).html());
+			$(this).attr('activeBooleanColumn', 'true');
+			let currentValue = Boolean($(this).html());
+			console.log('Current' , currentValue)
+
+			$(this).closest('div').html(`<select id="booleanColumnSelect" class="form-select" aria-label="Default select example">
+			<option value="true" selected>Set Value</option>
+			<option value="${Boolean(currentValue)}" >${Boolean(currentValue)}</option>
+			<option value="${!Boolean(currentValue)}">${!Boolean(currentValue)}</option>
+		  </select>`);
+		}else if(digitColumns.includes(columnName)){
+			$(this).closest('div').attr('contenteditable', 'true');
 			$(this).closest('div').attr('inputmode', 'decimal');
+
+			$(this).addClass('border border-success').css('padding','2px');
+
+			$(this).focus();
+	
+			$(this).attr('original_entry', $(this).html());
+		}else{
+			$(this).closest('div').attr('contenteditable', 'true');
+
+			$(this).addClass('border border-success').css('padding','2px');
+
+			$(this).focus();
+	
+			$(this).attr('original_entry', $(this).html());
 		}
-		//add bg css
-		$(this).addClass('border border-success').css('padding','1px');
-
-		$(this).focus();
-
-		$(this).attr('original_entry', $(this).html());
-
 	})	
 	//--->make div editable > end
 
@@ -253,23 +271,31 @@ $(document).ready(function($)
 		}
 
 		//get the original entry
-		var original_entry = $(this).attr('original_entry');
+		let original_entry = $(this).attr('original_entry');
 
-		var row_id = $(this).closest('tr').attr('row_id'); 
-		var row_div = $(this)				
+		let row_id = $(this).closest('tr').attr('row_id'); 
+		let row_div = $(this)				
 		.removeClass('border border-success') //add bg css
-		.css('padding','')
+		.css('padding','');
 
-        var col_name = row_div.attr('col_name'); 
-		var col_val = row_div.html(); 
+		let col_val;
+        let col_name = row_div.attr('col_name'); 
+		let booleanColumns = ['pieceOnly', 'exported'];
 
-		var arr = {};
+		if(booleanColumns.includes(col_name)){
+			col_val = $('#booleanColumnSelect').val();
+			$(this).removeAttr('activeBooleanColumn', 'true');
+			console.log(col_val);
+		}else{
+			col_val = row_div.html(); 
+		}
+
+
+		let arr = {};
 		//get the col name and value
         arr[col_name] = col_val; 
 		//get row id value
         arr['row_id'] = row_id;
-
-        var startDate = $('')
 
 		if(col_val != original_entry && col_val != '' && col_val != ' ')
 		{ 

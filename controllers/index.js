@@ -50,6 +50,26 @@ exports.systemAdminData = async (req, res, next) => {
 
     try {
         const {Items} = await docClient.scan(params).promise().catch(error => console.log(error));
+        let exports = new Map();
+
+        // for (let row of Items) {
+        //     const key = row.employeeUserName+row.crewName;
+        //     if (exports.has(key)) {
+        //         let foundExport = exports.get(key);
+        //     } else {
+
+        //     }
+        // }
+
+        Items.sort(function (a, b) {
+            if(a.pk > b.pk) return 1;
+            if(a.pk < b.pk) return -1;
+
+            if(a.employeeUserName.toLowerCase() > b.employeeUserName.toLowerCase()) return 1;
+            if(a.employeeUserName.toLowerCase() < b.employeeUserName.toLowerCase()) return -1;
+
+        })
+        
         res.send(Items);
     } catch (error) {
         console.log(error)

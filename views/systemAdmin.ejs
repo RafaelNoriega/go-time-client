@@ -1,9 +1,9 @@
 <% include ./partials/_header.ejs%>
-<% include ./partials/_navbar-admin.ejs%>
+<% include ./partials/_navbar-systemAdmin.ejs%>
     <div class="container-md">
     <div class="row">
         <div class="col">
-            <form> 
+            <form action="/systemAdmin/data" method="GET"> 
                 <div class="form-row">
                     <div class="form-group col-sm-12 col-md-6">
                         <label>Start Date</label>
@@ -14,7 +14,7 @@
                         <input class="form-control" type="date" name="endDate" id="endDate">
                     </div>
 
-                    <button class="btn btn-primary mt-4" type="button" id="dateSearch">Search</button>
+                    <button class="btn btn-primary mt-4" type="submit" id="dateSearch">Search</button>
                 </div>
             </form>
         </div>
@@ -22,21 +22,21 @@
     <div class="row">
         <div class="col" style="padding-bottom: 40px;">
             <h1 class="text-center text-primary pt-5 pb-5">System Admin Portal</h1> 
-            <table class="table">
-                <thead class="thead-dark">
-                    <tr>
-                    <th scope="col">Date</th>
-                    <th scope="col">User</th>
-                    <th scope="col">Crew</th>
-                    <th scope="col">Exports</th>
-                    <th scope="col">Date Range</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
         </div>
     </div>
+        <table class="table table-hover">
+            <thead class="thead-dark">
+                <tr>
+                <th scope="col">Date</th>
+                <th scope="col">User</th>
+                <th scope="col">Crew</th>
+                <th scope="col">Exports</th>
+                <th scope="col">Date Range</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -97,8 +97,13 @@
             let rowDate = new Date(pk);
             rowDate = `${rowDate.getFullYear()}-${ rowDate.getMonth().toString().length < 2? '0' + (rowDate.getMonth()+1): rowDate.getMonth() + 1 }-${rowDate.getDate().toString().length < 2 ? '0' + rowDate.getDate(): rowDate.getDate()}`
 
-            line += `<tr><th scope="row">${rowDate}</th><td>${employeeUserName}</td><td>${crewName}</td><td>${exports}</td><td>${startDateSearch} - ${endDateSearch}</td></tr>`;
-            console.log(line);
+            line += `<tr>
+                        <td scope="row">${rowDate}</th>
+                        <td>${employeeUserName}</td>
+                        <td>${crewName}</td>
+                        <td>${exports}</td>
+                        <td>${startDateSearch} - ${endDateSearch}</td>
+                    </tr>`;
         }
         $(document).find('tbody').html(line);
     });
