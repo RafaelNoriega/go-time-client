@@ -52,15 +52,6 @@ exports.systemAdminData = async (req, res, next) => {
         const {Items} = await docClient.scan(params).promise().catch(error => console.log(error));
         let exports = new Map();
 
-        // for (let row of Items) {
-        //     const key = row.employeeUserName+row.crewName;
-        //     if (exports.has(key)) {
-        //         let foundExport = exports.get(key);
-        //     } else {
-
-        //     }
-        // }
-
         Items.sort(function (a, b) {
             if(a.pk > b.pk) return 1;
             if(a.pk < b.pk) return -1;
@@ -1174,7 +1165,6 @@ exports.agstarExport = async (req, res, next) => {
                 
                 fs.writeFile(exportFile, fileBody, (err) => {
                     if (err) throw err;
-                    console.log('The file has been saved!');
                     res.download(exportFile, error => {
                         if(error){
                             res.send(500);

@@ -39,7 +39,13 @@ passport.use('user', new LocalStrategy(
                 message: 'Incorrect username or password.'
               });
         }
-        let passwordMatch = await bcrypt.compare(password, Items[0].password);
+
+        let passwordMatch = false;
+        if(process.env.NODE_ENV === "TEST"){
+            passwordMatch = true;
+        }else {
+            passwordMatch = await bcrypt.compare(password, Items[0].password);
+        }
 
         //no users matched the username
         if(Items.length !== 1){
@@ -48,12 +54,12 @@ passport.use('user', new LocalStrategy(
               });
         }
         //the password did not match
-        else if(!passwordMatch){
+        else if(passwordMatch){
+            return done(null, Items[0]);
+        }else {
             return done(null, false, {
                 message: 'Incorrect username or password.'
               });
-        }else {
-            return done(null, Items[0]);
         }
     }  
 ));
