@@ -246,7 +246,6 @@ exports.adminDeleteCrew = async (req, res, next) => {
         };
 
         let {Items} = await docClient.query(getParams).promise().catch(error => console.log(error));
-        console.log(Items.length)
 
         for(item of Items){
             let deleteItem = {
@@ -306,10 +305,7 @@ exports.editAccountsPost = async (req, res, next)=> {
     
             let crewsToUpdateGrowers  = [];
             let crewsToUpdateJobs = [];
-    
-            //console.log(req.user)
-            console.log(req.body.jobs);
-    
+        
             //loop through user growers and jobs array and see if that grower is in body growers array. If it is push to new array.
             for( const grower of req.user.growers){
                 let found = false;
@@ -340,16 +336,13 @@ exports.editAccountsPost = async (req, res, next)=> {
     
             //find user crews that need to be updated and remove their grower or jobs from the user's list of crews.
             for(const [crewIndex, crew] of req.user.orgList.entries()){
-                // console.log(crew.name);
                 let offset = 0;
                 let newGrowersList = [...crew.growers];
                 for(const [growerIndex, crewGrower] of crew.growers.entries()){
                     for(const deletedGrower of deletedGrowers){
                         if(crewGrower.growerName === deletedGrower.growerName && crewGrower.growerId === deletedGrower.growerId){
-                            console.log(crewGrower.growerName,' vs ' , deletedGrower.growerName, ' at ', growerIndex);
                             //see if that crew is already in the array of crews that need to be updated. Since the removal of more than one grower can make duplicated in the crewsToUpdateGrowers array.
                             crewsToUpdateGrowers.push(crew);
-                            console.log('pushed: ', crew);
                             newGrowersList.splice(growerIndex-offset, 1);
                             offset++;
                         }
@@ -360,17 +353,14 @@ exports.editAccountsPost = async (req, res, next)=> {
     
             if(req.user.jobs){
                 for(const [crewIndex, crew] of req.user.orgList.entries()){
-                    // console.log(crew.name);
                     let offset = 0;
                     if(crew.jobs){
                         let newJobsList = [...crew.jobs];
                         for(const [jobIndex, crewJob] of crew.jobs.entries()){
                             for(const deletedJob of deletedJobs){
                                 if(crewJob.jobName === deletedJob.jobName && crewJob.jobId === deletedJob.jobId){
-                                    console.log(crewJob.jobName,' vs ' , deletedJob.jobName, ' at ', jobIndex);
                                     //see if that crew is already in the array of crews that need to be updated. Since the removal of more than one grower can make duplicated in the crewsToUpdateGrowers array.
                                     crewsToUpdateJobs.push(crew);
-                                    console.log('pushed: ', crew);
                                     newJobsList.splice(jobIndex-offset, 1);
                                     offset++;
                                 }
@@ -380,11 +370,6 @@ exports.editAccountsPost = async (req, res, next)=> {
                     }
                 }
             }
-    
-        console.log("growers to update: ", crewsToUpdateGrowers);
-        console.log("jobs to update: ", crewsToUpdateJobs);
-        console.log("deleted growers: ", deletedGrowers);
-        console.log('deleted jobs: ', deletedJobs);
     
         //update the users name, growers and jobs
         req.user['firstName'] = req.body.firstName;
@@ -421,23 +406,18 @@ exports.editAccountsPost = async (req, res, next)=> {
                 update = update.Items[0];
                 let newCostCenters = [...update.costCenters];
     
-                // console.log("Update Crew: ",update);
                 //loop through the costCenters of the crew to find the deleted grower
-                console.log(update.costCenters);
                 let offset = 0;
                 for(const [index, grower] of update.costCenters.entries()){
                     for(const deletedGrower of deletedGrowers){
                         if(grower.name == deletedGrower.growerName && grower.code == deletedGrower.growerId){
-                            console.log(grower.name,' vs ' ,deletedGrower.growerName, ' at ', index);
                             //delete grower from crew list
                             newCostCenters.splice(index-offset, 1);
                             offset++;
                         }
                     }
                 }
-                console.log(newCostCenters);
                 update['costCenters'] = [...newCostCenters];
-                console.log(update);
                 params = {
                     TableName: process.env.AWS_DATABASE,
                     Item: update
@@ -471,16 +451,13 @@ exports.editAccountsPost = async (req, res, next)=> {
                 for(const [index, job] of update.jobs.entries()){
                     for(const deletedJob of deletedJobs){
                         if(job.jobName == deletedJob.jobName && job.jobId == deletedJob.jobId){
-                            console.log(job.jobName,' vs ' ,deletedJob.jobName, ' at ', index);
                             //delete grower from crew list
                             newJobs.splice(index-offset, 1);
                             offset++;
                         }
                     }
                 }
-                console.log(newJobs); 
                 update.jobs = [...newJobs];
-                console.log(update);
                 params = {
                     TableName: process.env.AWS_DATABASE,
                     Item: update
@@ -554,8 +531,6 @@ exports.editCrew = async (req, res, next) => {
         }else{
             userJobs = [...user.jobs];
         }
-        console.log('User Jobs: ', userJobs);
-        console.log('Crew Jobs: ', crewJobs);
 
         res.render('editCrew', {user: req.user, crew, userGrowers, crewCostCenters, userJobs, crewJobs});
     } catch (error) {
@@ -630,10 +605,7 @@ exports.editCrewPost = async (req, res, next) => {
             newJobs.push(newJob);
         }
 
-        console.log(newGrowers);
-        console.log(newJobs);
         //update Crew
-
         let params = {
             TableName: process.env.AWS_DATABASE,
             KeyConditionExpression: "#pk = :pk AND #sk = :sk",
@@ -664,7 +636,6 @@ exports.editCrewPost = async (req, res, next) => {
         let i = 0;
         for(let [index, org] of user.orgList.entries()){
             if(org.org === user.pk){
-                console.log(org.org);
                 user.orgList[index]['growers'] = [...newGrowers];
                 user.orgList[index]['name'] = name;
                 user.orgList[index]['number'] = number;
@@ -676,7 +647,6 @@ exports.editCrewPost = async (req, res, next) => {
         user.pk = user.originalPK;
         delete user['originalPK'];
 
-        console.log(user.orgList[i]);
         params = {
             TableName: process.env.AWS_DATABASE,
             Item: user
@@ -695,27 +665,54 @@ exports.editCrewPost = async (req, res, next) => {
 }
 exports.getEmployees = async (req, res, next)=>{
     const {user} = req;
-
-    let params = {
-        TableName : process.env.AWS_DATABASE,
-        KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
-        FilterExpression: "#active = :activeValue OR #active = :activeValueString",
-        ExpressionAttributeNames:{
-            "#pk": "pk",
-            "#sk": "sk",
-            "#active": "active"
-        },
-        ExpressionAttributeValues: {
-            ":userPK": user.pk,
-            ":sk": 'EMP#',
-            ":activeValue": true,
-            ":activeValueString": 'true'
-        }
-    };
+    try {
+        let params = {
+            TableName : process.env.AWS_DATABASE,
+            KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
+            FilterExpression: "#active = :activeValue OR #active = :activeValueString",
+            ExpressionAttributeNames:{
+                "#pk": "pk",
+                "#sk": "sk",
+                "#active": "active"
+            },
+            ExpressionAttributeValues: {
+                ":userPK": user.pk,
+                ":sk": 'EMP#',
+                ":activeValue": true,
+                ":activeValueString": 'true'
+            }
+        };
+        
+        const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
+        let employees = Items.sort(function (a, b) {
+            //first sort by last name
+            if(a.lastName > b.lastName){
+                return 1;  
+            } 
+            if(a.lastName < b.lastName){
+                return -1;
+            } 
+            //then sort by first name
+            if(a.firstName > b.firstName){
+                return 1;
+            }
+            if(a.firstName < b.firstName) {
+                return -1;
+            }
+            //finally sort by id
+            if(parseInt(a.employeeId) > parseInt(b.employeeId)){
+                return 1;
+            }
+            if(parseInt(a.employeeId) < parseInt(b.employeeId)){
+                return -1;
+            }
     
-    const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
-    let employees = Items.sort((a, b) => (a.lastName > b.lastName) ? 1 : -1)
-    res.send(employees.filter(e => e.position == 'worker'));
+        });
+    
+        res.send(employees.filter(e => e.position == 'worker'));
+    } catch (error) {
+        console.log(error);
+    }
 }
 exports.newEmployee = (req, res, next) => {
     async function Main() {
@@ -772,7 +769,6 @@ exports.employeeBulkUpload = async (req, res, next) => {
                     console.log(err)
                 }else{
                     let rows = data.split('\n');
-                    console.log(rows.length);
                     for(let i = 1; i<rows.length; i++){
                         let row = rows[i].split(',');
 
@@ -796,8 +792,6 @@ exports.employeeBulkUpload = async (req, res, next) => {
                           await docClient.put(params).promise().catch(error => console.log(error));
                     }
 
-                    console.log('added employees');
-
                     fs.unlinkSync(newPath, error => console.log(error));
                     req.flash('message', 'Successfully added employee');
                     res.redirect('/new-employee');
@@ -812,7 +806,6 @@ exports.employeeBulkUpload = async (req, res, next) => {
 exports.updateEmployee = async (req, res, next)=>{
     const {user} = req;
     const {row_id, col_name, col_val} = req.body;
-    console.log('Column Name: ',col_name)
 
     if(col_name == 'delete'){
         let params = {
@@ -841,11 +834,9 @@ exports.updateEmployee = async (req, res, next)=>{
             },
             ReturnValues:"UPDATED_NEW"
         }
-        console.log("Updating the item...");
         await docClient.update(params).promise().catch(error => console.log(error));
 
         if(col_name == 'employeeId'){
-            console.log(row_id.substring(4))
             let params = {
                 TableName:process.env.AWS_DATABASE,
                 KeyConditionExpression: `#pk = :userPK AND begins_with(#sk, :sk)`,
@@ -859,11 +850,9 @@ exports.updateEmployee = async (req, res, next)=>{
                 }
             }
             let {Items} = await docClient.query(params).promise().catch(error => console.log("error: ", error));
-            console.log("Items: ", Items.length);
             for(let row of Items){
 
                 row.id = col_val;
-                console.log(row);
                 let params = { 
                     TableName:process.env.AWS_DATABASE,
                     Item: row
@@ -898,7 +887,6 @@ exports.getTime = async (req, res, next) => {
         };
         
         const {Items} = await docClient.query(params).promise().catch(error => console.log(error));
-        
         params = {
             TableName : process.env.AWS_DATABASE,
             KeyConditionExpression: `#pk = :userPK AND #sk = :sk`,
@@ -916,11 +904,21 @@ exports.getTime = async (req, res, next) => {
         let jobs = Item.Items[0].jobs;
         let costCenters = Item.Items[0].costCenters; 
         
-        let employees = Items.sort((a, b) => (a.lastName > b.lastName) ? 1 : -1)
+        let employees = Items.sort(function (a, b) {
+            //first sort by last name
+            if(a.lastName > b.lastName) return 1;
+            if(a.lastName < b.lastName) return -1;
+            //then sort by first name
+            if(a.firstName > b.firstName) return 1;
+            if(a.firstName < b.firstName) return -1;
+            //finally sort by id
+            if(a.employeeId > b.employeeId) return 1;
+            if(a.employeeId < b.employeeId) return -1;
+        });
 
         res.render('time', {user, employees: employees.filter(e => e.position == 'worker'), day, costCenters, jobs, message: req.flash('message'), error: req.flash('error')});
     } catch (error) {
-        
+        console.log(error);
     }
 }
 exports.newTime = async (req, res, next) => {
@@ -935,7 +933,6 @@ exports.newTime = async (req, res, next) => {
             res.redirect('/time');
         }else{
             if(typeof employees == 'string'){
-                console.log('single employee')
                 employeesList = [employees];
             }   
             
@@ -1064,17 +1061,21 @@ exports.timeRecordsData = async (req, res, next) => {
     try {
         const {user} = req;
         const {employeeId, costCenter, startDate, endDate} = req.query
-        let params;
 
         const Items = await fetchData(employeeId, costCenter, startDate, endDate, user);
-        // console.log(Items);
+
         res.send(Items.sort(function (a, b) {
             if(a.date > b.date) return 1;
             if(a.date < b.date) return -1;
 
-            if(a.lastName.toLowerCase() > b.lastName.toLowerCase()) return 1;
-            if(a.lastName.toLowerCase() < b.lastName.toLowerCase()) return -1;
+            if(a.lastName > b.lastName) return 1;
+            if(a.lastName < b.lastName) return -1;
 
+            if(a.firstName > b.firstName) return 1;
+            if(a.firstName < b.firstName) return -1;
+
+            if(a.employeeId > b.employeeId) return 1;
+            if(a.employeeId < b.employeeId) return -1;
         })
         );
 
@@ -1114,7 +1115,6 @@ exports.timeRecordsDataUpdate = async (req, res, next) => {
             ReturnValues:"UPDATED_NEW"
         };
         
-        console.log("Updating the item...");
         await docClient.update(params).promise().catch(error => console.log(error));
         return res.sendStatus(200)
     }
@@ -1248,7 +1248,6 @@ exports.datatechExport = async (req, res, next) => {
                 
                 fs.writeFile(exportFile, fileBody, (err) => {
                     if (err) throw err;
-                    console.log('The file has been saved!');
                     res.download(exportFile, error => {
                         if(error){
                             res.send(500);
@@ -1281,7 +1280,6 @@ exports.dailySummaryReport = async (req, res, next) => {
 
             fs.writeFile(`./exports/Summary.csv`, file, (err)=>{
                 if (err) throw err;
-                console.log('The file has been saved!');
                 res.download(`./exports/Summary.csv`, error => {
                     if(error){
                         res.send(500);
@@ -1304,7 +1302,6 @@ exports.timeRecordsDataReset = async (req, res, next) => {
 
     function updateData(data=[], user){
         return new Promise( (resolve, reject) => {
-            console.log(data.length);
             for(const row of data){
                 const params = {
                     TableName: process.env.AWS_DATABASE,
