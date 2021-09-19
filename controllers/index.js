@@ -476,7 +476,6 @@ exports.editAccountsPost = async (req, res, next)=> {
         console.log(error);
     }
 }
-
 exports.editCrew = async (req, res, next) => {
     try {
         const {user} = req;
@@ -1033,7 +1032,6 @@ exports.timeRecords = async (req, res, next) => {
         let user = req.user;
         let startDate = moment().format('YYYY-MM-DD');
         let endDate = moment().format('YYYY-MM-DD');
-        //let endDate   = moment().day(7).format('YYYY-MM-DD');
         params = {
             TableName : process.env.AWS_DATABASE,
             KeyConditionExpression: `#pk = :userPK AND #sk = :sk`,
